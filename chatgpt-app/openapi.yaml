@@ -1,0 +1,673 @@
+openapi: "3.1.0"
+info:
+  title: Course Companion FTE — Phase 1 API
+  version: "1.0.0"
+  description: >
+    Deterministic backend for the AI Agent Development course tutor.
+    Zero-Backend-LLM: no LLM inference in this API.
+    All intelligent tutoring is performed by the ChatGPT App frontend.
+  contact:
+    name: Panaversity Agent Factory Hackathon IV
+
+servers:
+  - url: https://course-companion.fly.dev
+    description: Production (Fly.io)
+  - url: http://localhost:8080
+    description: Local development
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TokenResponse:
+      type: object
+      required: [access_token, token_type]
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    ChapterMeta:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+          example: chapter-01
+        title:
+          type: string
+          example: Introduction to AI Agents
+        module:
+          type: integer
+          example: 1
+        locked:
+          type: boolean
+          description: True for free users on chapters 4-5
+
+    ChapterContent:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+          description: Verbatim markdown text from R2
+
+    ChapterNav:
+      type: object
+      nullable: true
+      properties:
+        chapter_id:
+          type: string
+        title:
+          type: string
+
+    ChapterSummary:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+        key_points:
+          type: array
+          items:
+            type: string
+
+    SearchResult:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+        title:
+          type: string
+        excerpt:
+          type: string
+          description: 200-char window around first keyword match
+
+    QuizQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 4
+
+    QuizQuestionsResponse:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizQuestion'
+
+    QuizSubmitRequest:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            q1: "A"
+            q2: "C"
+
+    QuizResult:
+      type: object
+      properties:
+        score:
+          type: integer
+        total:
+          type: integer
+        percentage:
+          type: number
+          format: float
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              correct:
+                type: boolean
+
+    QuizAnswerItem:
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        correct_answer:
+          type: string
+        explanation:
+          type: string
+          nullable: true
+
+    QuizAnswersResponse:
+      type: object
+      properties:
+        chapter_id:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizAnswerItem'
+
+    ProgressResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        completion_percentage:
+          type: number
+          format: float
+        completed_chapters:
+          type: array
+          items:
+            type: string
+        streak_days:
+          type: integer
+        total_quizzes:
+          type: integer
+        avg_quiz_score:
+          type: number
+          format: float
+
+    ChapterCompleteRequest:
+      type: object
+      required: [chapter_id]
+      properties:
+        chapter_id:
+          type: string
+
+    ChapterCompleteResponse:
+      type: object
+      properties:
+        streak_days:
+          type: integer
+        chapter_id:
+          type: string
+        completed:
+          type: boolean
+
+    QuizScoreRequest:
+      type: object
+      required: [chapter_id, score, total_questions]
+      properties:
+        chapter_id:
+          type: string
+        score:
+          type: integer
+        total_questions:
+          type: integer
+
+    AccessCheckResponse:
+      type: object
+      properties:
+        allowed:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+        tier:
+          type: string
+          enum: [free, premium, pro]
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: health_check
+      tags: [Health]
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: 1.0.0
+
+  /auth/register:
+    post:
+      summary: Register a new user
+      operationId: auth_register
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered, JWT returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+
+  /auth/login:
+    post:
+      summary: Login and get JWT
+      operationId: auth_login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: JWT access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /chapters:
+    get:
+      summary: List all chapters with metadata
+      operationId: list_chapters
+      tags: [Chapters]
+      responses:
+        '200':
+          description: Chapter list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChapterMeta'
+
+  /chapters/{chapter_id}:
+    get:
+      summary: Get full chapter content from R2
+      operationId: get_chapter
+      tags: [Chapters]
+      security:
+        - BearerAuth: []
+        - {}
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: chapter-01
+      responses:
+        '200':
+          description: Chapter content (verbatim markdown)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChapterContent'
+        '403':
+          description: Premium required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Chapter not found
+
+  /chapters/{chapter_id}/next:
+    get:
+      summary: Get next chapter navigation
+      operationId: get_chapter_next
+      tags: [Chapters]
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Next chapter or null if last
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChapterNav'
+
+  /chapters/{chapter_id}/previous:
+    get:
+      summary: Get previous chapter navigation
+      operationId: get_chapter_previous
+      tags: [Chapters]
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Previous chapter or null if first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChapterNav'
+
+  /chapters/{chapter_id}/summary:
+    get:
+      summary: Get static chapter key points
+      operationId: get_chapter_summary
+      tags: [Chapters]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Static key points list (NOT LLM generated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChapterSummary'
+        '403':
+          description: Premium required
+
+  /search:
+    get:
+      summary: Keyword search across all chapters
+      operationId: search_chapters
+      tags: [Search]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          description: Search query (ILIKE against pre-built DB index)
+      responses:
+        '200':
+          description: Matching chapters with excerpts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchResult'
+
+  /quizzes/{chapter_id}:
+    get:
+      summary: Get quiz questions (no answers)
+      operationId: get_quiz
+      tags: [Quizzes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quiz questions without correct answers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizQuestionsResponse'
+        '403':
+          description: Premium required
+
+  /quizzes/{chapter_id}/submit:
+    post:
+      summary: Submit answers and get score (rule-based grading)
+      operationId: submit_quiz
+      tags: [Quizzes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizSubmitRequest'
+      responses:
+        '200':
+          description: Score and per-question results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizResult'
+        '403':
+          description: Premium required
+
+  /quizzes/{chapter_id}/answers:
+    get:
+      summary: Get correct answers (after at least one attempt)
+      operationId: get_quiz_answers
+      tags: [Quizzes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Correct answers with optional explanations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAnswersResponse'
+        '403':
+          description: No attempt found or premium required
+
+  /progress/{user_id}:
+    get:
+      summary: Get user progress summary
+      operationId: get_progress
+      tags: [Progress]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Progress summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressResponse'
+        '403':
+          description: user_id does not match token.sub
+
+  /progress/{user_id}/chapter:
+    put:
+      summary: Mark chapter complete and update streak
+      operationId: complete_chapter
+      tags: [Progress]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChapterCompleteRequest'
+      responses:
+        '200':
+          description: Updated streak and completion status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChapterCompleteResponse'
+        '403':
+          description: user_id does not match token.sub
+
+  /progress/{user_id}/quiz:
+    put:
+      summary: Record quiz score
+      operationId: record_quiz_score
+      tags: [Progress]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizScoreRequest'
+      responses:
+        '200':
+          description: Score recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recorded:
+                    type: boolean
+        '403':
+          description: user_id does not match token.sub
+
+  /progress/{user_id}/reset:
+    delete:
+      summary: Reset all user progress
+      operationId: reset_progress
+      tags: [Progress]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Progress reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reset:
+                    type: boolean
+        '403':
+          description: user_id does not match token.sub
+
+  /access/check:
+    get:
+      summary: Check freemium access for a chapter
+      operationId: check_access
+      tags: [Access]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: chapter_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Access decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessCheckResponse'

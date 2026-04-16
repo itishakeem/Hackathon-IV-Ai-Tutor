@@ -1,0 +1,61 @@
+{
+  "chapter_id": "chapter-02",
+  "chapter_title": "Claude Agent SDK",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "What `stop_reason` value indicates that Claude has finished and will not request any more tool calls?",
+      "options": {
+        "A": "tool_use",
+        "B": "stop_sequence",
+        "C": "end_turn",
+        "D": "max_tokens"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q2",
+      "question": "After Claude returns a `tool_use` block, what message must you add to the conversation before calling `messages.create` again?",
+      "options": {
+        "A": "A new `user` message with the tool's input",
+        "B": "A `user` message containing a `tool_result` block with the tool's output",
+        "C": "A `system` message describing the tool result",
+        "D": "Nothing — the SDK handles it automatically"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q3",
+      "question": "Which of the following is NOT listed as a property of a well-designed tool?",
+      "options": {
+        "A": "Narrow — does one thing well",
+        "B": "Idempotent — safe to call multiple times",
+        "C": "Verbose — includes extensive logging",
+        "D": "Typed — uses JSON Schema to define inputs"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q4",
+      "question": "What are the four sections that an effective system prompt should define?",
+      "options": {
+        "A": "Model, temperature, max_tokens, stop_sequence",
+        "B": "Role, capabilities, constraints, output format",
+        "C": "Name, version, tools, examples",
+        "D": "Persona, memory, context, history"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q5",
+      "question": "How do you install the Anthropic SDK using uv?",
+      "options": {
+        "A": "uv install anthropic",
+        "B": "uv get anthropic",
+        "C": "uv add anthropic",
+        "D": "uv pip install anthropic"
+      },
+      "correct_answer": "C"
+    }
+  ]
+}

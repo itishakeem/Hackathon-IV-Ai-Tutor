@@ -1,0 +1,61 @@
+{
+  "chapter_id": "chapter-03",
+  "chapter_title": "Model Context Protocol (MCP)",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "What wire protocol does MCP use for communication between client and server?",
+      "options": {
+        "A": "REST over HTTP",
+        "B": "GraphQL",
+        "C": "JSON-RPC 2.0",
+        "D": "gRPC"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q2",
+      "question": "What are the two supported MCP transport mechanisms?",
+      "options": {
+        "A": "WebSocket and gRPC",
+        "B": "stdio and HTTP with SSE",
+        "C": "TCP and UDP",
+        "D": "REST and GraphQL"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q3",
+      "question": "What is the first message a client sends during the MCP connection handshake?",
+      "options": {
+        "A": "tools/list",
+        "B": "connect",
+        "C": "initialize",
+        "D": "capabilities"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q4",
+      "question": "Which method does a client call to discover all tools exposed by an MCP server?",
+      "options": {
+        "A": "tools/get",
+        "B": "tools/list",
+        "C": "server/capabilities",
+        "D": "list_tools"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q5",
+      "question": "Which of the following is a best practice when building MCP servers?",
+      "options": {
+        "A": "Accept any input without validation for maximum flexibility",
+        "B": "Return an HTTP 500 status on tool errors",
+        "C": "Return isError: true with a descriptive message rather than crashing on errors",
+        "D": "Use a single tool that handles all operations"
+      },
+      "correct_answer": "C"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "chapter_id": "chapter-04",
+  "chapter_title": "Agent Skills (SKILL.md)",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "What is the primary purpose of a SKILL.md file?",
+      "options": {
+        "A": "To define the agent's database schema",
+        "B": "To document reusable, self-contained agent behaviour with triggers and instructions",
+        "C": "To store API keys and environment variables",
+        "D": "To configure the model's temperature and token limits"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q2",
+      "question": "Which of the following is NOT one of the five sections of a well-structured SKILL.md?",
+      "options": {
+        "A": "Trigger Conditions",
+        "B": "Behaviour Instructions",
+        "C": "API Endpoints",
+        "D": "Output Format"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q3",
+      "question": "How are skills included in an agent's system prompt at runtime?",
+      "options": {
+        "A": "They are uploaded to a vector database and retrieved by similarity",
+        "B": "The content of each SKILL.md is substituted into the system prompt at placeholder positions",
+        "C": "They are passed as separate `tools` in the API call",
+        "D": "They are loaded as Python modules"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q4",
+      "question": "What is a state trigger in the context of agent skills?",
+      "options": {
+        "A": "A trigger based on the agent's memory of prior turns",
+        "B": "A trigger that activates based on conversation state, such as the user finishing a chapter",
+        "C": "A trigger based on database state",
+        "D": "A trigger that fires every time the agent is initialised"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q5",
+      "question": "What is the main advantage of decomposing agent behaviour into skills rather than using a monolithic system prompt?",
+      "options": {
+        "A": "Skills reduce the model's context window usage to zero",
+        "B": "Skills eliminate the need for a system prompt entirely",
+        "C": "Skills are modular, independently testable, and reusable across agents",
+        "D": "Skills automatically handle retry logic"
+      },
+      "correct_answer": "C"
+    }
+  ]
+}

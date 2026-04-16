@@ -1,0 +1,61 @@
+{
+  "chapter_id": "chapter-01",
+  "chapter_title": "Introduction to AI Agents",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Which of the following best describes the perceive-reason-act-observe loop?",
+      "options": {
+        "A": "A one-shot input-output mapping with no iteration",
+        "B": "The defining operational cycle of an AI agent",
+        "C": "A technique exclusive to reactive agents",
+        "D": "A hardware architecture for neural networks"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q2",
+      "question": "What is the most fundamental difference between a chatbot and an AI agent?",
+      "options": {
+        "A": "Chatbots use larger language models",
+        "B": "Agents can only run on cloud infrastructure",
+        "C": "Agents can use tools and take multi-step autonomous actions to change external state",
+        "D": "Chatbots are always faster to respond"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q3",
+      "question": "A reactive agent is best characterised by which property?",
+      "options": {
+        "A": "It maintains a detailed world model and plans ahead",
+        "B": "It reacts directly to current input without persistent internal state",
+        "C": "It combines deliberative and reactive behaviours",
+        "D": "It always requires tool access"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q4",
+      "question": "Which agent type is most appropriate for a research task that requires outlining a plan, searching multiple sources, and then writing a report?",
+      "options": {
+        "A": "Reactive agent",
+        "B": "Stateless agent",
+        "C": "Deliberative agent",
+        "D": "Rule-based agent"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q5",
+      "question": "Most production AI agents (including Claude with tools) are classified as which type?",
+      "options": {
+        "A": "Pure reactive",
+        "B": "Pure deliberative",
+        "C": "Hybrid",
+        "D": "Stateless"
+      },
+      "correct_answer": "C"
+    }
+  ]
+}

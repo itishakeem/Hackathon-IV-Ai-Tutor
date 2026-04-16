@@ -1,0 +1,61 @@
+{
+  "chapter_id": "chapter-05",
+  "chapter_title": "Multi-Agent Systems",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Which of the following is NOT listed as a limit that multi-agent systems overcome?",
+      "options": {
+        "A": "Context window constraints",
+        "B": "Lack of specialisation",
+        "C": "High API costs",
+        "D": "Sequential processing (no parallelism)"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q2",
+      "question": "In the fan-out/fan-in pattern, what determines the overall latency?",
+      "options": {
+        "A": "The sum of all subtask latencies",
+        "B": "The latency of the orchestrator only",
+        "C": "The slowest subtask latency",
+        "D": "The average latency of all subtasks"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q3",
+      "question": "What is an Agent Card?",
+      "options": {
+        "A": "A credit card used to pay for agent API calls",
+        "B": "A JSON document describing an agent's capabilities, endpoint, and input schema",
+        "C": "A Markdown file containing the agent's system prompt",
+        "D": "A Docker image label for agent containers"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q4",
+      "question": "Which storage type is recommended for short-lived session context in a multi-agent system?",
+      "options": {
+        "A": "PostgreSQL",
+        "B": "Object storage (R2/S3)",
+        "C": "Redis with a short TTL",
+        "D": "Local filesystem"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q5",
+      "question": "When should you use the debate pattern in a multi-agent system?",
+      "options": {
+        "A": "When speed is the top priority and you want the fastest possible answer",
+        "B": "When tasks are strictly sequential and have no parallelism",
+        "C": "When high accuracy matters more than speed and you want multiple independent solutions evaluated by a judge",
+        "D": "When agents need to share a single database connection"
+      },
+      "correct_answer": "C"
+    }
+  ]
+}
