@@ -27,12 +27,12 @@ export default function ChapterPage() {
 
   const [chapter, setChapter] = useState<ChapterContent | null>(null);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!chapterId);
   const [error, setError] = useState<string | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   useEffect(() => {
-    if (!chapterId) return;
+    if (!chapterId) { setLoading(false); return; }
     setLoading(true);
     setError(null);
 
@@ -77,7 +77,7 @@ export default function ChapterPage() {
 
   return (
     <>
-      {chapter && hasAccess && (
+      {chapter && hasAccess === true && (
         <>
           <ChapterReader
             chapter={chapter}

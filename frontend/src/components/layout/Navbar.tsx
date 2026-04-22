@@ -102,10 +102,10 @@ export function Navbar() {
                 className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20 transition-all duration-200"
               >
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.4)]">
-                  {(user.email[0] ?? "U").toUpperCase()}
+                  {(user.email?.[0] ?? "U").toUpperCase()}
                 </div>
                 <span className="hidden sm:block max-w-[110px] truncate text-sm text-white/80">
-                  {user.email.split("@")[0]}
+                  {user.email?.split("@")[0] ?? ""}
                 </span>
                 <ChevronDown className={cn(
                   "h-3.5 w-3.5 text-white/40 transition-transform duration-200",
@@ -259,10 +259,10 @@ export function Navbar() {
                     <>
                       <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/5 border border-white/8">
                         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-[0_0_10px_rgba(99,102,241,0.35)]">
-                          {(user.email[0] ?? "U").toUpperCase()}
+                          {(user.email?.[0] ?? "U").toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm text-white font-medium truncate">{user.email.split("@")[0]}</p>
+                          <p className="text-sm text-white font-medium truncate">{user.email?.split("@")[0] ?? ""}</p>
                           <span className={cn(
                             "inline-flex text-xs border px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider mt-0.5",
                             badge.cls

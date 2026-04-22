@@ -14,7 +14,6 @@ import {
 import { useState } from "react";
 import type { ChapterMeta } from "@/types";
 import { cn } from "@/lib/utils";
-import { staggerContainer, staggerItem } from "@/lib/animations";
 
 interface ChapterListProps {
   chapters: ChapterMeta[];
@@ -41,32 +40,33 @@ export function ChapterList({ chapters, userTier }: ChapterListProps) {
 
   return (
     <>
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-      >
-        {chapters.map((chapter) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {chapters.map((chapter, i) => {
           const locked = isLocked(chapter.id);
           return (
-            <motion.div key={chapter.id} variants={staggerItem}>
+            <motion.div
+              key={chapter.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.07 }}
+              className="h-full"
+            >
               {locked ? (
                 <button
-                  className="w-full text-left"
+                  className="w-full h-full text-left"
                   onClick={() => setUpgradeOpen(true)}
                 >
                   <ChapterCard chapter={chapter} locked />
                 </button>
               ) : (
-                <Link href={`/learn/${chapter.id}`} className="block">
+                <Link href={`/learn/${chapter.id}`} className="block h-full">
                   <ChapterCard chapter={chapter} locked={false} />
                 </Link>
               )}
             </motion.div>
           );
         })}
-      </motion.div>
+      </div>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
         <DialogContent className="bg-[#111118] border border-white/10 text-[#F8FAFC]">
