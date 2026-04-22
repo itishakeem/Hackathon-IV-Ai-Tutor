@@ -11,6 +11,7 @@ from app.schemas.progress import (
     ChapterCompleteResponse,
     ChapterProgressItem,
     ProgressResponse,
+    QuizScoreItem,
 )
 
 # NO LLM imports
@@ -20,7 +21,6 @@ _TOTAL_CHAPTERS = 5
 
 async def get_progress(db: AsyncSession, user_id: uuid.UUID) -> ProgressResponse:
     """Compute full progress summary for a user."""
-    # All progress rows for this user
     result = await db.execute(
         select(Progress).where(Progress.user_id == user_id)
     )
@@ -35,27 +35,39 @@ async def get_progress(db: AsyncSession, user_id: uuid.UUID) -> ProgressResponse
         for r in rows
     ]
 
-    completed_count = sum(1 for r in rows if r.completed)
+    completed_chapter_ids = [r.chapter_id for r in rows if r.completed]
+    completed_count = len(completed_chapter_ids)
     completion_pct = round((completed_count / _TOTAL_CHAPTERS) * 100, 1)
     current_streak = max((r.streak_days for r in rows), default=0)
 
-    # Average quiz score across all attempts
-    score_result = await db.execute(
-        select(
-            func.avg(
-                QuizAttempt.score.cast(Float) / QuizAttempt.total_questions
-            )
-        ).where(QuizAttempt.user_id == user_id)
+    # All quiz attempts for this user
+    attempts_result = await db.execute(
+        select(QuizAttempt)
+        .where(QuizAttempt.user_id == user_id)
+        .order_by(QuizAttempt.attempted_at.asc())
     )
-    raw_avg = score_result.scalar_one_or_none()
-    avg_quiz_score = round(raw_avg * 100, 1) if raw_avg is not None else None
+    attempts = attempts_result.scalars().all()
+
+    quiz_scores = [
+        QuizScoreItem(
+            chapter_id=a.chapter_id,
+            score=round((a.score / a.total_questions) * 100) if a.total_questions > 0 else 0,
+            attempted_at=a.attempted_at,
+        )
+        for a in attempts
+    ]
+
+    avg_quiz_score: float | None = None
+    if quiz_scores:
+        avg_quiz_score = round(sum(s.score for s in quiz_scores) / len(quiz_scores), 1)
 
     return ProgressResponse(
         user_id=str(user_id),
-        completed_chapters=completed_count,
+        completed_chapters=completed_chapter_ids,
+        quiz_scores=quiz_scores,
+        streak=current_streak,
         total_chapters=_TOTAL_CHAPTERS,
         completion_percentage=completion_pct,
-        streak_days=current_streak,
         avg_quiz_score=avg_quiz_score,
         chapters=chapters,
     )
@@ -74,7 +86,6 @@ async def complete_chapter(
     """
     today: date = datetime.now(timezone.utc).date()
 
-    # Fetch or create the progress row
     result = await db.execute(
         select(Progress).where(
             Progress.user_id == user_id,
@@ -97,16 +108,12 @@ async def complete_chapter(
         last = row.last_activity_date
 
         if last is None:
-            # First time completing
             new_streak = 1
         elif last == today:
-            # Same day — no change
             new_streak = row.streak_days
         elif (today - last).days == 1:
-            # Consecutive day — increment
             new_streak = row.streak_days + 1
         else:
-            # Gap > 1 day — reset
             new_streak = 1
 
         row.completed = True

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -7,12 +9,19 @@ class ChapterProgressItem(BaseModel):
     streak_days: int
 
 
+class QuizScoreItem(BaseModel):
+    chapter_id: str
+    score: int
+    attempted_at: datetime
+
+
 class ProgressResponse(BaseModel):
     user_id: str
-    completed_chapters: int
+    completed_chapters: list[str]
+    quiz_scores: list[QuizScoreItem]
+    streak: int
     total_chapters: int
     completion_percentage: float
-    streak_days: int
     avg_quiz_score: float | None
     chapters: list[ChapterProgressItem]
 
