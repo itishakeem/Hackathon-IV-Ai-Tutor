@@ -230,8 +230,9 @@ class TestProgress:
         assert resp.status_code == 200
         data = resp.json()
         assert data["total_chapters"] == 5
-        assert data["completed_chapters"] == 0
-        assert data["streak_days"] == 0
+        assert data["completed_chapters"] == []
+        assert data["streak"] == 0
+        assert data["quiz_scores"] == []
         assert data["avg_quiz_score"] is None
         assert data["chapters"] == []
 
@@ -295,5 +296,6 @@ class TestProgress:
 
         # Verify cleared
         resp = await async_client.get(f"/progress/{user_id}", headers=headers)
-        assert resp.json()["completed_chapters"] == 0
+        assert resp.json()["completed_chapters"] == []
+        assert resp.json()["quiz_scores"] == []
         assert resp.json()["avg_quiz_score"] is None

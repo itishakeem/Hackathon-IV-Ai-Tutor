@@ -1,0 +1,354 @@
+openapi: "3.1.0"
+info:
+  title: Course Companion FTE — Premium API (Phase 2)
+  description: |
+    Pro-tier premium endpoints. All require JWT with tier=pro.
+    LLM calls use claude-sonnet-4-20250514 via Anthropic SDK.
+    Every call is logged to llm_usage table.
+  version: "2.0.0"
+
+servers:
+  - url: https://course-companion-fte.fly.dev
+    description: Production
+  - url: http://localhost:8080
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+paths:
+  /premium/assess-answer:
+    post:
+      operationId: assessAnswer
+      summary: LLM-graded assessment of a free-text student answer
+      description: |
+        Evaluates the student's written answer against chapter content using Claude Sonnet.
+        Pro tier only. Logs usage to llm_usage table.
+      tags: [premium]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentRequest"
+            example:
+              chapter_id: chapter-01
+              question: Explain the difference between an AI Agent and a Chatbot
+              student_answer: An agent can take autonomous actions using tools and memory, while a chatbot simply responds to inputs.
+              user_id: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        "200":
+          description: Assessment result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentResponse"
+              example:
+                score: 85
+                max_score: 100
+                feedback: Good understanding of agent autonomy. Consider elaborating on the planning aspect.
+                strengths:
+                  - Correctly identified action-taking capability
+                  - Mentioned memory and state
+                improvements:
+                  - Expand on planning and goal-directed behaviour
+                  - Mention tool use explicitly
+                suggested_reading: "chapter-01 section: Agent vs Chatbot"
+        "403":
+          $ref: "#/components/responses/ProRequired"
+        "404":
+          $ref: "#/components/responses/ChapterNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimitExceeded"
+        "503":
+          $ref: "#/components/responses/LLMUnavailable"
+
+  /premium/synthesize:
+    post:
+      operationId: synthesizeChapters
+      summary: Cross-chapter synthesis connecting concepts across multiple chapters
+      description: |
+        Generates a synthesis narrative, knowledge graph, and key connections across
+        2–5 chapters. Pro tier only. Logs usage to llm_usage table.
+      tags: [premium]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SynthesisRequest"
+            example:
+              chapter_ids:
+                - chapter-01
+                - chapter-02
+                - chapter-03
+              focus_topic: How MCP connects agents to the real world
+              user_id: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        "200":
+          description: Synthesis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SynthesisResponse"
+              example:
+                synthesis: Across these three chapters, a clear progression emerges from understanding what agents are, to building them with Claude SDK, to connecting them to the world via MCP...
+                key_connections:
+                  - "Agents need tools [chapter-01] → Claude SDK provides tool registration [chapter-02]"
+                  - "Tool execution [chapter-02] → MCP servers handle execution context [chapter-03]"
+                knowledge_graph:
+                  - from: AI Agent
+                    to: Claude SDK
+                    relationship: implemented with
+                  - from: Claude SDK
+                    to: MCP
+                    relationship: connects via
+                recommended_next: chapter-04
+        "403":
+          $ref: "#/components/responses/ProRequired"
+        "404":
+          $ref: "#/components/responses/ChapterNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimitExceeded"
+        "503":
+          $ref: "#/components/responses/LLMUnavailable"
+
+  /premium/usage/{user_id}:
+    get:
+      operationId: getLlmUsage
+      summary: Get LLM usage history for a user
+      description: |
+        Returns all LLM calls made by the user with token counts and cost.
+        User can only view their own usage (token.sub must equal user_id).
+      tags: [premium]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Must match the authenticated user's ID
+      responses:
+        "200":
+          description: Usage records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageResponse"
+              example:
+                user_id: 550e8400-e29b-41d4-a716-446655440000
+                records:
+                  - id: 6ba7b810-9dad-11d1-80b4-00c04fd430c8
+                    feature: assessment
+                    tokens_used: 800
+                    cost_usd: 0.006900
+                    created_at: "2026-04-17T14:32:00Z"
+                  - id: 6ba7b811-9dad-11d1-80b4-00c04fd430c8
+                    feature: synthesis
+                    tokens_used: 1800
+                    cost_usd: 0.018900
+                    created_at: "2026-04-17T14:35:00Z"
+                total_cost: 0.025800
+        "403":
+          description: Forbidden — user_id does not match token subject
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AssessmentRequest:
+      type: object
+      required: [chapter_id, question, student_answer, user_id]
+      properties:
+        chapter_id:
+          type: string
+          example: chapter-01
+          description: Must be one of chapter-01 through chapter-05
+        question:
+          type: string
+          example: Explain the difference between an AI Agent and a Chatbot
+        student_answer:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          description: Free-text answer. Silently truncated at 2000 chars server-side.
+          example: An agent can take autonomous actions...
+        user_id:
+          type: string
+          format: uuid
+
+    AssessmentResponse:
+      type: object
+      required: [score, max_score, feedback, strengths, improvements, suggested_reading]
+      properties:
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        max_score:
+          type: integer
+          example: 100
+        feedback:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        improvements:
+          type: array
+          items:
+            type: string
+        suggested_reading:
+          type: string
+          description: Reference to a chapter section (e.g., "chapter-01 section: Agent vs Chatbot")
+
+    SynthesisRequest:
+      type: object
+      required: [chapter_ids, user_id]
+      properties:
+        chapter_ids:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 5
+          example: [chapter-01, chapter-02, chapter-03]
+        focus_topic:
+          type: string
+          default: "General synthesis across selected chapters"
+          example: How MCP connects agents to the real world
+        user_id:
+          type: string
+          format: uuid
+
+    SynthesisResponse:
+      type: object
+      required: [synthesis, key_connections, knowledge_graph, recommended_next]
+      properties:
+        synthesis:
+          type: string
+          description: Narrative connecting the selected chapters
+        key_connections:
+          type: array
+          items:
+            type: string
+          description: Each entry must cite source chapter(s) with [chapter-XX] notation
+        knowledge_graph:
+          type: array
+          items:
+            $ref: "#/components/schemas/GraphEdge"
+        recommended_next:
+          type: string
+          description: chapter_id of the recommended next chapter
+
+    GraphEdge:
+      type: object
+      required: [from, to, relationship]
+      properties:
+        from:
+          type: string
+          description: Source concept
+        to:
+          type: string
+          description: Target concept
+        relationship:
+          type: string
+          description: Relationship label (e.g., "uses", "extends", "requires")
+
+    LlmUsageRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        feature:
+          type: string
+          enum: [assessment, synthesis]
+        tokens_used:
+          type: integer
+        cost_usd:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
+
+    UsageResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/LlmUsageRecord"
+        total_cost:
+          type: number
+          format: float
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+
+  responses:
+    ProRequired:
+      description: Pro tier required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            detail: "This feature requires Pro plan. Upgrade at /pricing"
+
+    ChapterNotFound:
+      description: Chapter not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            detail: "Chapter 'chapter-99' not found."
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: array
+
+    RateLimitExceeded:
+      description: Daily LLM call limit reached
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            detail: "Daily limit of 10 LLM calls reached. Resets at midnight UTC."
+
+    LLMUnavailable:
+      description: LLM service temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            detail: "Assessment service temporarily unavailable. Please try again."
