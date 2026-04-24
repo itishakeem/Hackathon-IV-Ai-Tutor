@@ -82,7 +82,9 @@ export default function GradientButton({
       className={baseClass}
       onClick={onClick}
       disabled={disabled || loading}
-      whileTap={buttonPress.whileTap}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
     >
       {content}
     </motion.button>

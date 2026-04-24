@@ -16,10 +16,8 @@ export function useChapters(): ApiState<ChapterMeta[]> & { refetch: () => void }
     chaptersApi
       .getAll()
       .then((data) => setState({ data, loading: false, error: null }))
-      .catch((err: unknown) => {
-        const message =
-          err instanceof Error ? err.message : "Failed to load chapters";
-        setState({ data: null, loading: false, error: message });
+      .catch(() => {
+        setState({ data: null, loading: false, error: "Unable to load chapters" });
       });
   }, []);
 

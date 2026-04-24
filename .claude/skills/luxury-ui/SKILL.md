@@ -1,8 +1,13 @@
+---
+name: luxury-ui
+description: Luxury UI Design System — Course Companion FTE. Design tokens, component patterns, animation variants, error handling rules, and code snippets for the dark-first glassmorphism UI. Read before writing any component or page in this project.
+---
+
 # Luxury UI Design System — Course Companion FTE
 
-**Purpose**: Agent-reusable design tokens, component patterns, animation variants, and code snippets for the luxury dark-first UI redesign. Read this file before writing any component or page in the `003-luxury-ui-redesign` feature.
+**Purpose**: Agent-reusable design tokens, component patterns, animation variants, and code snippets for the luxury dark-first UI. Read this file before writing any component or page.
 
-**Stack**: Next.js 16.2.4 · Tailwind v4 (no tailwind.config.ts) · shadcn v4.3.0 (base-ui, no asChild) · framer-motion · TypeScript strict
+**Stack**: Next.js 16.2.4 · Tailwind v4 (no tailwind.config.ts) · shadcn v4.3.0 (base-ui, no asChild) · framer-motion 12.x · TypeScript strict
 
 ---
 
@@ -23,7 +28,7 @@
 --error: #EF4444;
 ```
 
-These are declared in `frontend/src/app/globals.css` as:
+Declared in `frontend/src/app/globals.css`:
 ```css
 :root, .dark {
   --luxury-bg: #0A0A0F;
@@ -32,7 +37,6 @@ These are declared in `frontend/src/app/globals.css` as:
   --background: #0A0A0F;
   --foreground: #F8FAFC;
 }
-
 @theme inline {
   --color-luxury-bg: var(--luxury-bg);
   --color-luxury-card: var(--luxury-card);
@@ -44,7 +48,15 @@ These are declared in `frontend/src/app/globals.css` as:
 }
 ```
 
-**Always use hardcoded hex values in Tailwind arbitrary syntax** — e.g., `bg-[#0A0A0F]` — for reliability in Tailwind v4.
+### Transition Tokens (from `lib/animations.ts`)
+```typescript
+export const TRANSITION_FAST = { duration: 0.15, ease: "easeOut" };
+export const TRANSITION_BASE = { duration: 0.3,  ease: "easeOut" };
+export const TRANSITION_SLOW = { duration: 0.5,  ease: "easeOut" };
+export const SPRING = { type: "spring", stiffness: 300, damping: 20 };
+```
+
+**Always use hardcoded hex in Tailwind arbitrary syntax** — e.g. `bg-[#0A0A0F]` — for reliability in Tailwind v4.
 
 ---
 
@@ -52,371 +64,280 @@ These are declared in `frontend/src/app/globals.css` as:
 
 - **Gradient text**: `bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent`
 - **Gradient button**: `bg-gradient-to-r from-indigo-600 to-violet-600`
-- **Gradient border**: `p-[1px] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl` (inner div has `bg-[#111118] rounded-2xl`)
-- **Mesh background**: multiple absolutely-positioned radial blobs with `blur-3xl` and `/20` opacity
+- **Gradient border**: `p-[1px] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl` (inner div `bg-[#111118] rounded-2xl`)
+- **Mesh background**: absolutely-positioned radial blobs with `blur-3xl` and `/20` opacity
 - **Glow shadow**: `shadow-[0_0_30px_rgba(99,102,241,0.3)]`
 - **Stronger glow**: `shadow-[0_0_40px_rgba(99,102,241,0.5)]`
 
 ---
 
-## 3. Component Patterns (with full code snippets)
+## 3. Component Patterns
 
 ### GlassCard
 ```tsx
-<div className="
-  backdrop-blur-xl bg-white/5 
-  border border-white/10 rounded-2xl p-6
-  hover:bg-white/[0.08] hover:border-white/20
-  transition-all duration-300
-">
-  {children}
-</div>
+// hover prop activates translateY(-4px) + shadow intensify via framer-motion
+<GlassCard hover>content</GlassCard>
+
+// raw pattern:
+<div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6
+  hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 will-change-transform">
 ```
 
 ### GradientText
 ```tsx
-<span className="
-  bg-gradient-to-r from-indigo-400 to-violet-400
-  bg-clip-text text-transparent font-bold
-">
-  {children}
-</span>
+<GradientText>Heading</GradientText>
+// = bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent font-bold
 ```
 
 ### GlowButton (Primary)
 ```tsx
-<button className="
-  bg-gradient-to-r from-indigo-600 to-violet-600
-  hover:from-indigo-500 hover:to-violet-500
-  shadow-[0_0_20px_rgba(99,102,241,0.4)]
-  hover:shadow-[0_0_30px_rgba(99,102,241,0.6)]
-  px-6 py-3 rounded-xl font-semibold text-white
-  transition-all duration-300 cursor-pointer
-">
-  {children}
-</button>
+<GradientButton variant="primary">Click</GradientButton>
+// includes: whileHover scale(1.02) + whileTap scale(0.97) via framer-motion
+// raw:
+<motion.button
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.97 }}
+  transition={{ duration: 0.15, ease: "easeOut" }}
+  className="bg-gradient-to-r from-indigo-600 to-violet-600
+    hover:from-indigo-500 hover:to-violet-500
+    shadow-[0_0_20px_rgba(99,102,241,0.4)]
+    hover:shadow-[0_0_30px_rgba(99,102,241,0.6)]
+    px-6 py-3 rounded-xl font-semibold text-white transition-all"
+/>
 ```
 
 ### GlassButton (Secondary)
 ```tsx
-<button className="
-  border border-white/20 bg-white/5
-  hover:bg-white/10 hover:border-white/30
-  px-6 py-3 rounded-xl font-semibold text-white
-  transition-all duration-300 backdrop-blur-sm
-">
-  {children}
-</button>
+<GradientButton variant="secondary">Cancel</GradientButton>
+// raw:
+<button className="border border-white/20 bg-white/5 hover:bg-white/10
+  hover:border-white/30 px-6 py-3 rounded-xl font-semibold text-white
+  transition-all duration-300 backdrop-blur-sm" />
 ```
 
-### GradientBorder (wrapper for Pro cards / avatar rings)
+### GradientBorder (Pro card / avatar ring)
 ```tsx
 <div className="p-[1px] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl">
-  <div className="bg-[#111118] rounded-2xl">
-    {children}
-  </div>
+  <div className="bg-[#111118] rounded-2xl">{children}</div>
 </div>
+```
+
+### Dark Input (with focus glow)
+```tsx
+<input className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3
+  text-white placeholder-white/30 focus:outline-none
+  focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)]
+  transition-all duration-300" />
 ```
 
 ### Tier Badge
 ```tsx
 // Free: border-slate-500 text-slate-400
 // Premium: border-indigo-500 text-indigo-400
-// Pro: border-amber-500 text-amber-400 (gold)
-<span className="
-  border px-3 py-1 rounded-full text-xs font-semibold
-  uppercase tracking-wider
-">
+// Pro: border-amber-500 text-amber-400
+<span className="border px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
   {tier}
 </span>
 ```
 
-### Dark Input
-```tsx
-<input className="
-  w-full bg-white/5 border border-white/10
-  focus:border-indigo-500 focus:outline-none
-  rounded-lg px-4 py-3 text-white placeholder-white/30
-  transition-colors duration-200
-" />
-```
-
-### Link-as-Button (shadcn v4.3.0 base-ui — NO asChild)
-```tsx
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
-<Link href="/register" className={cn(buttonVariants({ size: "lg" }))}>
-  Get Started
-</Link>
-```
-
 ---
 
-## 4. Framer Motion Variants (full code)
+## 4. Animation Patterns (full variants from `lib/animations.ts`)
 
-File: `frontend/src/lib/animations.ts`
-
+### Page Transitions
 ```typescript
-import { Variants } from "framer-motion";
-
-export const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.4 } },
-};
-
-export const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-};
-
+// Enter: fade + slide up 300ms ease-out
+// Exit:  fade + slide down 200ms ease-in
 export const pageTransition: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  exit:   { opacity: 0, y: -20, transition: { duration: 0.2, ease: "easeIn" } },
 };
+// Usage: wrap every page in <PageTransition> which handles reducedMotion
+```
 
+### Modal Enter/Exit
+```typescript
+export const modalVariants: Variants = {
+  hidden:  { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1,    transition: { duration: 0.25, ease: "easeOut" } },
+  exit:    { opacity: 0, scale: 0.95, transition: { duration: 0.15, ease: "easeIn"  } },
+};
+// shadcn Dialog uses base-ui data-open/data-closed: zoom-in-95 / zoom-out-95 automatically
+```
+
+### Card Hover
+```typescript
+export const cardHover = {
+  whileHover: { y: -4, boxShadow: "0 0 40px rgba(99,102,241,0.25)" },
+  transition:  SPRING,  // stiffness 300, damping 20
+};
+// Pass hover={true} to <GlassCard> to activate
+```
+
+### Button Press
+```typescript
+export const buttonHover = {
+  whileHover: { scale: 1.02 },
+  whileTap:   { scale: 0.97 },
+  transition: { duration: 0.15, ease: "easeOut" },
+};
+// Built into GradientButton; apply manually to bare motion.button elements
+```
+
+### Stagger Lists
+```typescript
 export const staggerContainer: Variants = {
   hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { transition: { staggerChildren: 0.08 } },
 };
-
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  hidden:  { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: TRANSITION_BASE },
 };
+// IMPORTANT: Use plain <div> as stagger container, NOT motion.div
+// (framer-motion re-processes children of motion containers causing React key warnings)
+// Each child uses explicit initial/animate instead:
+// <motion.div key={item.id} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay: i*0.07}} />
+```
 
-export const cardHover = {
-  whileHover: { scale: 1.02, y: -4 },
-  transition: { type: "spring", stiffness: 300, damping: 20 },
-};
-
-export const buttonPress = {
-  whileTap: { scale: 0.97 },
-};
-
+### Glow Pulse (infinite, Pro cards)
+```typescript
 export const glowPulse: Variants = {
-  hidden: { boxShadow: "0 0 20px rgba(99,102,241,0.3)" },
-  visible: {
-    boxShadow: [
-      "0 0 20px rgba(99,102,241,0.3)",
-      "0 0 40px rgba(99,102,241,0.6)",
-      "0 0 20px rgba(99,102,241,0.3)",
-    ],
-    transition: { duration: 2, repeat: Infinity },
-  },
+  hidden:  { boxShadow: "0 0 20px rgba(99,102,241,0.3)" },
+  visible: { boxShadow: [...], transition: { duration: 2, repeat: Infinity } },
 };
-
-// SSR-safe reduced motion hook
-// Usage: const reducedMotion = useReducedMotion();
-import { useState, useEffect } from "react";
-
-export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduced;
-}
 ```
 
-**Usage pattern** (always check reducedMotion in animated components):
+### Number Counter
 ```tsx
-const reducedMotion = useReducedMotion();
-
-// Skip animation entirely when reducedMotion is true
-<motion.div
-  variants={fadeInUp}
-  initial={reducedMotion ? "visible" : "hidden"}
-  animate="visible"
->
+// AnimatedCounter: ease-out cubic, 1s, triggers on scroll into view
+// Usage: <AnimatedCounter end={85} suffix="%" />
+// Respects reducedMotion — renders end value immediately if true
 ```
 
----
-
-## 5. MeshBackground Pattern
-
+### Skeleton Shimmer
 ```tsx
-// src/components/ui/luxury/MeshBackground.tsx
-'use client';
-
-export default function MeshBackground({ className }: { className?: string }) {
-  const reducedMotion = useReducedMotion();
-  
-  const orbs = [
-    { size: "w-96 h-96", color: "bg-indigo-600/20", top: "top-1/4", left: "left-1/4", dur: 8 },
-    { size: "w-80 h-80", color: "bg-violet-600/20", top: "top-1/3", left: "right-1/4", dur: 10 },
-    { size: "w-72 h-72", color: "bg-cyan-500/10", top: "bottom-1/4", left: "left-1/3", dur: 12 },
-  ];
-
-  return (
-    <div className={`absolute inset-0 overflow-hidden -z-10 ${className ?? ""}`}>
-      {orbs.map((orb, i) => (
-        reducedMotion ? (
-          <div
-            key={i}
-            className={`absolute ${orb.size} ${orb.color} ${orb.top} ${orb.left} rounded-full blur-3xl`}
-          />
-        ) : (
-          <motion.div
-            key={i}
-            className={`absolute ${orb.size} ${orb.color} rounded-full blur-3xl`}
-            style={{ top: /* position via style not className for motion */ undefined }}
-            animate={{ x: [0, 30, -20, 0], y: [0, -20, 30, 0] }}
-            transition={{ duration: orb.dur, repeat: Infinity, ease: "easeInOut" }}
-          />
-        )
-      ))}
-    </div>
-  );
-}
+// Built into shadcn Skeleton: animate-pulse shimmer left→right 1.5s infinite
+// Usage: <Skeleton className="h-8 w-full bg-white/5 rounded-xl" />
 ```
 
-**Simpler CSS-only version** (also acceptable, no JS):
+### Success Checkmark
 ```tsx
-<div className="absolute inset-0 overflow-hidden -z-10">
-  <div className="absolute top-1/4 left-1/4 w-96 h-96 
-    bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
-  <div className="absolute top-1/3 right-1/4 w-80 h-80 
-    bg-violet-500/20 rounded-full blur-3xl animate-pulse 
-    [animation-delay:1000ms]" />
-  <div className="absolute bottom-1/4 left-1/3 w-72 h-72 
-    bg-cyan-500/10 rounded-full blur-3xl animate-pulse 
-    [animation-delay:2000ms]" />
-</div>
+// Use lucide CheckCircle2 with emerald-400, wrap in motion.div scale 0→1
+<motion.div initial={{scale:0}} animate={{scale:1}} transition={{type:"spring",stiffness:300,delay:0.2}}>
+  <CheckCircle2 className="text-emerald-400 w-12 h-12" />
+</motion.div>
+```
+
+### Toast Animations
+```tsx
+// react-hot-toast with luxury styling in layout.tsx Toaster:
+// background: #111118, border: rgba(99,102,241,0.3), borderRadius: 12px
+// position: "top-right" — slides in from right via built-in library animation
 ```
 
 ---
 
-## 6. Page Layout Shell
+## 5. Route Transitions with AnimatePresence
+
+Route transitions are handled at the **page** level via `<PageTransition>` wrapper — do NOT wrap `{children}` in the root layout with `AnimatePresence` as Next.js App Router manages route boundaries.
 
 ```tsx
-'use client';
-import { motion } from "framer-motion";
-import { pageTransition } from "@/lib/animations";
-import MeshBackground from "@/components/ui/luxury/MeshBackground";
-
+// Every page uses:
+import PageTransition from "@/components/ui/PageTransition";
 export default function SomePage() {
   return (
-    <motion.div
-      variants={pageTransition}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      className="relative min-h-screen bg-[#0A0A0F] text-white"
-    >
-      <MeshBackground />
+    <PageTransition>
       {/* page content */}
-    </motion.div>
+    </PageTransition>
   );
 }
 ```
 
+For step-transitions within a page (multi-step forms like forgot-password), use:
+```tsx
+import { AnimatePresence, motion } from "framer-motion";
+<AnimatePresence mode="wait">
+  {step === "email" && <motion.div key="email" variants={cardVariants} ...> </motion.div>}
+  {step === "code"  && <motion.div key="code"  variants={cardVariants} ...> </motion.div>}
+</AnimatePresence>
+```
+
 ---
 
-## 7. AnimatedCounter Pattern
+## 6. MeshBackground Pattern
 
 ```tsx
-// src/components/ui/luxury/AnimatedCounter.tsx
-'use client';
-import { useEffect, useRef, useState } from "react";
-import { useInView } from "framer-motion";
-import { useReducedMotion } from "@/lib/animations";
-
-interface Props {
-  end: number;
-  suffix?: string;
-  prefix?: string;
-  duration?: number; // seconds
-}
-
-export default function AnimatedCounter({ end, suffix = "", prefix = "", duration = 2 }: Props) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-  const reducedMotion = useReducedMotion();
-  const [count, setCount] = useState(reducedMotion ? end : 0);
-
-  useEffect(() => {
-    if (!inView || reducedMotion) return;
-    let start = 0;
-    const steps = 60;
-    const increment = end / steps;
-    const interval = (duration * 1000) / steps;
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, interval);
-    return () => clearInterval(timer);
-  }, [inView, end, duration, reducedMotion]);
-
-  return (
-    <span ref={ref}>
-      {prefix}{count.toLocaleString()}{suffix}
-    </span>
-  );
-}
+// CSS-only version (preferred for performance):
+<div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
+  <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
+  <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-violet-500/20 rounded-full blur-3xl animate-pulse [animation-delay:1000ms]" />
+  <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-pulse [animation-delay:2000ms]" />
+</div>
+// Component: <MeshBackground /> — use reducedMotion to skip animate-pulse
 ```
 
 ---
 
-## 8. ScrollReveal Pattern
+## 7. ScrollReveal Pattern
 
 ```tsx
-// src/components/ui/luxury/ScrollReveal.tsx
-'use client';
-import { motion } from "framer-motion";
-import { fadeInUp, useReducedMotion } from "@/lib/animations";
-
-interface Props {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}
-
-export default function ScrollReveal({ children, className, delay = 0 }: Props) {
-  const reducedMotion = useReducedMotion();
-
-  if (reducedMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
-  return (
-    <motion.div
-      className={className}
-      variants={fadeInUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      transition={{ delay }}
-    >
-      {children}
-    </motion.div>
-  );
-}
+// Component: <ScrollReveal delay={0.1}>{children}</ScrollReveal>
+// Uses whileInView + viewport={{ once: true }} — fires once as element enters view
+// Falls back to plain <div> when reducedMotion is true
 ```
 
 ---
 
-## 9. Responsive Breakpoints
+## 8. AnimatedCounter Pattern
 
-| Breakpoint | Tailwind | Width |
-|------------|----------|-------|
-| Mobile | (default) | 375px+ |
-| Tablet | `md:` | 768px+ |
-| Desktop | `lg:` / `xl:` | 1024px+ / 1280px+ |
-| Wide | `2xl:` | 1536px+ |
+```tsx
+// Component: <AnimatedCounter end={85} suffix="%" />
+// Ease-out cubic over 1s, triggered by useInView once
+// Returns end value immediately when reducedMotion is true
+```
+
+---
+
+## 9. Error Handling Patterns (no raw errors on UI)
+
+```typescript
+// In forms: use getErrorStatus() from lib/api.ts
+import { getErrorStatus } from "@/lib/api";
+try {
+  await apiCall();
+} catch (err) {
+  const status = getErrorStatus(err);
+  if (status === 401)  { /* handled by axios interceptor → redirect /login */ }
+  if (status === 403)  { setUpgradeOpen(true); }              // show upgrade modal
+  if (status === 404)  { setEmpty(true); }                    // show empty state
+  if (status === 422)  { setError("Please check your input."); } // inline only
+  if (status === 409)  { setError("Already exists."); }       // inline only
+  // 500/503/network: axios interceptor fires toast automatically — just setLoading(false)
+}
+
+// In hooks: always use a generic message, never expose err.message
+.catch(() => {
+  setState({ data: null, loading: false, error: "Unable to load data" });
+});
+```
+
+Axios interceptor in `lib/api.ts` handles:
+- `401` → clearAuth() + redirect `/login` (silent)
+- `500/503` → `toast.error("Service temporarily unavailable")`
+- Network error → `toast.error("Something went wrong, please try again")`
+
+---
+
+## 10. Responsive Breakpoints
+
+| Breakpoint | Tailwind | Width   |
+|------------|----------|---------|
+| Mobile     | default  | 375px+  |
+| Tablet     | `md:`    | 768px+  |
+| Desktop    | `lg:`    | 1024px+ |
+| Wide       | `xl:`    | 1280px+ |
 
 **Mobile-first rules**:
 - Feature grid: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
@@ -426,62 +347,59 @@ export default function ScrollReveal({ children, className, delay = 0 }: Props) 
 
 ---
 
-## 10. Dark Mode
+## 11. Dark Mode
 
-- **Default is DARK** — `ThemeProvider defaultTheme="dark"` is set in `layout.tsx`
+- Default is **DARK** — `ThemeProvider defaultTheme="dark"` in `layout.tsx`
 - Use `bg-[#0A0A0F]` not `bg-background` for guaranteed dark value
 - Use `text-white` not `text-foreground` in luxury components
-- Hardcode dark hex values for consistency across all luxury pages
-- Glassmorphism `backdrop-blur` degrades gracefully — `bg-white/5` provides solid fallback
+- Hardcode dark hex values; glassmorphism `backdrop-blur` degrades gracefully
 
 ---
 
-## 11. DOs and DON'Ts
+## 12. DOs and DON'Ts
 
 ### DO
 - `bg-[#0A0A0F]` dark background on every page
 - Glass cards with `backdrop-blur-xl bg-white/5 border border-white/10`
-- Gradient text (`from-indigo-400 to-violet-400 bg-clip-text text-transparent`) for all headings
-- `framer-motion` on every section reveal
-- Glow effects on interactive elements (`shadow-[0_0_30px_rgba(99,102,241,0.3)]`)
-- `staggerContainer` + `staggerItem` on lists/grids
-- `transition-all duration-300` for smooth hover states
-- `'use client'` on every component that uses framer-motion
-- `useReducedMotion()` check in every animated component
+- Gradient text for all major headings
+- `will-change-transform` on animated cards for GPU compositing
+- `useReducedMotion()` guard in **every** animated component
 - `<Link className={cn(buttonVariants(...))}>` for link-as-button (NO asChild)
-- Tailwind v4: add tokens to `globals.css` `@theme inline {}` (no `tailwind.config.ts`)
+- Tailwind v4: tokens in `globals.css @theme inline {}` only
+- `viewport={{ once: true }}` on all `whileInView` animations
+- Plain `<div>` as mapped list container; animate each child individually
 
 ### DON'T
 - White or light backgrounds (`bg-white`, `bg-gray-50`)
-- Flat solid color cards without backdrop-blur
+- `motion.div` as a `.map()` container — causes React key prop warnings
 - Components that skip `useReducedMotion()` check
-- Hard shadows — use `shadow-[0_0_Xpx_rgba(...)]` glow instead
-- Abrupt transitions (always add `transition-all duration-300`)
-- `asChild` prop on shadcn Button — base-ui v4.3.0 doesn't support it
-- Explicit `number` type annotation on Recharts `formatter` value param
-- Editing `tailwind.config.ts` — it doesn't exist; use `globals.css`
+- Hard drop-shadows — use `shadow-[0_0_Xpx_rgba(...)]` glow only
+- `asChild` on shadcn Button — base-ui v4.3.0 doesn't support it
+- Explicit `number` type on Recharts `formatter` value parameter
+- `tailwind.config.ts` — it doesn't exist; use `globals.css`
+- Exposing `err.message`, API detail text, or stack traces to users
 
 ---
 
-## 12. Performance Rules
+## 13. Performance Rules
 
-- Wrap animations: `if (reducedMotion) return <div>{children}</div>`
-- Add `will-change-transform` class to animated cards for GPU compositing
-- Use `viewport={{ once: true }}` on all `whileInView` animations
-- Keep `blur-3xl` as max for MeshBackground (heavier blurs hurt paint)
-- `next/image` with `priority` on above-the-fold images
-- Animation durations: 0.3–0.5s for reveals, ≤ 0.8s total per SC-003
+- `will-change-transform` on animated cards
+- `viewport={{ once: true }}` on all scroll-triggered animations
+- `blur-3xl` max for MeshBackground
+- Animation durations: 0.15–0.5s; nothing longer than 0.8s
+- `if (reducedMotion) return <div>{children}</div>` — skip all framer variants
 
 ---
 
-## 13. Critical Technical Constraints
+## 14. Critical Technical Constraints
 
 | Constraint | Rule |
 |-----------|------|
 | shadcn v4.3.0 | `@base-ui/react` — no `asChild` prop anywhere |
-| Tailwind v4 | No `tailwind.config.ts` — CSS tokens only via `globals.css` |
-| framer-motion | Must be `'use client'` — cannot run in Server Components |
-| SSR safety | `useReducedMotion` must use `useState(false)` + `useEffect` (no `window` on server) |
+| Tailwind v4 | No `tailwind.config.ts` — CSS tokens via `globals.css` only |
+| framer-motion | Must be `'use client'` — no Server Components |
+| SSR safety | `useReducedMotion` uses `useState(false)` + `useEffect` only |
 | Recharts | `formatter={(value) => ...}` — no explicit `number` type on `value` |
-| Contact form | `setTimeout` simulation only — no API call |
-| pnpm tsc | Must pass `pnpm tsc --noEmit` with zero errors after every phase |
+| TypeScript | `pnpm tsc --noEmit` must pass zero errors after every change |
+| Error UX | Never show `err.message`, API detail, or stack traces to users |
+| List animations | Never `motion.div` as list container — use plain `div` + per-item animation |

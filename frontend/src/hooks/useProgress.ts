@@ -19,10 +19,8 @@ export function useProgress(): ApiState<ProgressResponse> & { refetch: () => voi
     progressApi
       .get(user.sub)
       .then((data) => setState({ data, loading: false, error: null }))
-      .catch((err: unknown) => {
-        const message =
-          err instanceof Error ? err.message : "Failed to load progress";
-        setState({ data: null, loading: false, error: message });
+      .catch(() => {
+        setState({ data: null, loading: false, error: "Unable to load progress" });
       });
   }, [user]);
 

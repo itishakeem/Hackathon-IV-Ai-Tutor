@@ -3,15 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import axios from "axios";
 import toast from "react-hot-toast";
-import { authApi } from "@/lib/api";
+import { authApi, getErrorStatus } from "@/lib/api";
 import { decodeJwt } from "@/lib/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2, AlertCircle, ArrowRight } from "lucide-react";
 import type { FormState } from "@/types";
 
-const inputCls = "w-full rounded-xl border border-white/10 bg-[#0D0D14] px-4 py-3 text-sm text-[#F8FAFC] placeholder:text-white/30 focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all";
+const inputCls = "w-full rounded-xl border border-white/10 bg-[#0D0D14] px-4 py-3 text-sm text-[#F8FAFC] placeholder:text-white/30 focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all duration-300";
 
 export function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -21,7 +20,7 @@ export function RegisterForm() {
   const { setAuth } = useAuth();
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (password !== confirm) {
       setFormState({ submitting: false, error: "Passwords do not match." });
@@ -35,18 +34,15 @@ export function RegisterForm() {
       toast.success("Account created!");
       router.push("/dashboard");
     } catch (err: unknown) {
-      let message = "Registration failed. Please try again.";
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 409) {
-          message = "Email already in use.";
-        } else if (err.response?.status === 422) {
-          const detail = err.response.data?.detail;
-          if (Array.isArray(detail) && detail.length > 0) {
-            message = (detail[0] as { msg?: string }).msg ?? message;
-          }
-        }
+      const status = getErrorStatus(err);
+      if (status === 409) {
+        setFormState({ submitting: false, error: "Email already in use." });
+      } else if (status === 422) {
+        setFormState({ submitting: false, error: "Please enter a valid email and password." });
+      } else {
+        setFormState({ submitting: false, error: null });
+        // 500/503/network errors handled by axios interceptor toast
       }
-      setFormState({ submitting: false, error: message });
     }
   }
 
@@ -108,7 +104,8 @@ export function RegisterForm() {
         disabled={formState.submitting}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
-        className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+        transition={{ duration: 0.15 }}
+        className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)]"
       >
         {formState.submitting ? (
           <><Loader2 className="w-4 h-4 animate-spin" /> Creating account…</>

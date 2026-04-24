@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { authApi } from "@/lib/api";
+import { authApi, getErrorStatus } from "@/lib/api";
 import { decodeJwt } from "@/lib/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2, AlertCircle, ArrowRight } from "lucide-react";
 import type { FormState } from "@/types";
 
-const inputCls = "w-full rounded-xl border border-white/10 bg-[#0D0D14] px-4 py-3 text-sm text-[#F8FAFC] placeholder:text-white/30 focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all";
+const inputCls = "w-full rounded-xl border border-white/10 bg-[#0D0D14] px-4 py-3 text-sm text-[#F8FAFC] placeholder:text-white/30 focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all duration-300";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -19,25 +20,25 @@ export function LoginForm() {
   const { setAuth } = useAuth();
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormState({ submitting: true, error: null });
     try {
       const { access_token } = await authApi.login(email, password);
       const user = decodeJwt(access_token);
       setAuth(access_token, user);
-      toast.success("Logged in!");
+      toast.success("Welcome back!");
       router.push("/dashboard");
     } catch (err: unknown) {
-      let message = "Login failed. Please try again.";
-      if (
-        err instanceof Error &&
-        "response" in err &&
-        (err as { response?: { status?: number } }).response?.status === 401
-      ) {
-        message = "Invalid email or password.";
+      const status = getErrorStatus(err);
+      if (status === 401) {
+        setFormState({ submitting: false, error: "Invalid email or password." });
+      } else if (status === 422) {
+        setFormState({ submitting: false, error: "Please enter a valid email and password." });
+      } else {
+        setFormState({ submitting: false, error: null });
+        // 500/503/network errors are handled by the axios interceptor toast
       }
-      setFormState({ submitting: false, error: message });
     }
   }
 
@@ -59,9 +60,17 @@ export function LoginForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="password" className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">
-          Password
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">
+            Password
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <input
           id="password"
           type="password"
@@ -84,7 +93,8 @@ export function LoginForm() {
         disabled={formState.submitting}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
-        className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+        transition={{ duration: 0.15 }}
+        className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)]"
       >
         {formState.submitting ? (
           <><Loader2 className="w-4 h-4 animate-spin" /> Signing in…</>

@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import type {
   AuthToken,
   ChapterMeta,
@@ -38,21 +39,46 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor — handle 401 globally
+// Response interceptor — handle status codes globally, never leak raw errors
 apiClient.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
-    if (
-      axios.isAxiosError(error) &&
-      error.response?.status === 401 &&
-      typeof window !== "undefined"
-    ) {
+    if (!axios.isAxiosError(error)) {
+      toast.error("Something went wrong, please try again");
+      return Promise.reject(error);
+    }
+
+    const status = error.response?.status;
+
+    if (status === 401 && typeof window !== "undefined") {
       useAuthStore.getState().clearAuth();
       window.location.href = "/login";
+      return Promise.reject(error);
     }
+
+    if (status === 500 || status === 503) {
+      toast.error("Service temporarily unavailable");
+    }
+
+    if (!status && typeof window !== "undefined") {
+      // Network error — no response at all
+      toast.error("Something went wrong, please try again");
+    }
+
     return Promise.reject(error);
   }
 );
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getErrorStatus(err: unknown): number | null {
+  if (axios.isAxiosError(err)) return err.response?.status ?? null;
+  return null;
+}
+
+export { getErrorStatus };
 
 // ---------------------------------------------------------------------------
 // Auth API
@@ -70,6 +96,16 @@ export const authApi = {
         username: email,
         password,
       })
+      .then((r) => r.data),
+
+  forgotPassword: (email: string) =>
+    apiClient
+      .post<{ message: string }>("/auth/forgot-password", { email })
+      .then((r) => r.data),
+
+  resetPassword: (email: string, code: string, new_password: string) =>
+    apiClient
+      .post<{ message: string }>("/auth/reset-password", { email, code, new_password })
       .then((r) => r.data),
 };
 

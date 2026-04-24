@@ -41,12 +41,16 @@ function getDateString(): string {
   });
 }
 
-const MOTIVATIONAL_QUOTES = [
-  "Every expert was once a beginner.",
-  "The best investment is in yourself.",
-  "Progress over perfection, always.",
-  "Build things that matter.",
-];
+function getProgressSubtitle(pct: number): string {
+  if (pct === 0) return "Ready to start your AI journey?";
+  if (pct < 50) return "You're making great progress!";
+  if (pct < 100) return "Almost there, keep going!";
+  return "You've mastered AI Agents! 🏆";
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -56,7 +60,9 @@ export default function DashboardPage() {
 
   const greeting = getGreeting();
   const dateString = getDateString();
-  const quote = MOTIVATIONAL_QUOTES[new Date().getDay() % MOTIVATIONAL_QUOTES.length];
+  const name = capitalize(user?.email?.split("@")[0] ?? "Developer");
+  const pct = progress?.completion_percentage ?? 0;
+  const subtitle = getProgressSubtitle(pct);
 
   const averageScore =
     progress && progress.quiz_scores.length > 0
@@ -165,10 +171,13 @@ export default function DashboardPage() {
           animate="visible"
         >
           <motion.h1 variants={staggerItem} className="text-3xl font-bold text-white">
-            {greeting}, <GradientText>{user?.email?.split("@")[0] ?? "Developer"}</GradientText> 👋
+            {greeting}, <GradientText>{name}</GradientText> 👋
           </motion.h1>
           <motion.p variants={staggerItem} className="text-white/40 text-sm mt-1">
-            {dateString} · {quote}
+            {dateString}
+          </motion.p>
+          <motion.p variants={staggerItem} className="text-white/60 text-sm font-medium mt-0.5">
+            {subtitle}
           </motion.p>
         </motion.div>
 
