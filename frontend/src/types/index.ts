@@ -32,6 +32,7 @@ export interface ChapterMeta {
   title: string;
   description: string;
   order: number;
+  locked?: boolean;       // from backend: freemium gate
   is_completed?: boolean; // injected client-side from progress
 }
 

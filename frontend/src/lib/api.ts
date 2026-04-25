@@ -113,24 +113,69 @@ export const authApi = {
 // Chapters API
 // ---------------------------------------------------------------------------
 
+// Backend sends chapter_id/module; frontend types use id/order — normalise here.
+type BackendChapterMeta = {
+  chapter_id: string;
+  title: string;
+  description?: string;
+  module: number;
+  locked?: boolean;
+};
+type BackendChapterContent = {
+  chapter_id: string;
+  title: string;
+  content: string;
+};
+type BackendChapterNav = {
+  chapter_id: string;
+  title: string;
+};
+
+function normalizeChapterMeta(b: BackendChapterMeta): ChapterMeta {
+  return {
+    id: b.chapter_id,
+    title: b.title,
+    description: b.description ?? "",
+    order: b.module,
+    locked: b.locked ?? false,
+  };
+}
+
+function normalizeChapterContent(b: BackendChapterContent): ChapterContent {
+  return {
+    id: b.chapter_id,
+    title: b.title,
+    content: b.content,
+    order: 0, // not used in reader
+  };
+}
+
+function normalizeChapterNav(b: BackendChapterNav): ChapterNav {
+  return { id: b.chapter_id, title: b.title };
+}
+
 export const chaptersApi = {
   getAll: () =>
-    apiClient.get<ChapterMeta[]>("/chapters").then((r) => r.data),
+    apiClient
+      .get<BackendChapterMeta[]>("/chapters")
+      .then((r) => r.data.map(normalizeChapterMeta)),
 
   getOne: (chapterId: string) =>
     apiClient
-      .get<ChapterContent>(`/chapters/${chapterId}`)
-      .then((r) => r.data),
+      .get<BackendChapterContent>(`/chapters/${chapterId}`)
+      .then((r) => normalizeChapterContent(r.data)),
 
   getNext: (chapterId: string) =>
     apiClient
-      .get<ChapterNav | null>(`/chapters/${chapterId}/next`)
-      .then((r) => r.data),
+      .get<BackendChapterNav>(`/chapters/${chapterId}/next`)
+      .then((r) => normalizeChapterNav(r.data))
+      .catch(() => null),
 
   getPrev: (chapterId: string) =>
     apiClient
-      .get<ChapterNav | null>(`/chapters/${chapterId}/previous`)
-      .then((r) => r.data),
+      .get<BackendChapterNav>(`/chapters/${chapterId}/previous`)
+      .then((r) => normalizeChapterNav(r.data))
+      .catch(() => null),
 };
 
 // ---------------------------------------------------------------------------

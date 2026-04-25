@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class ChapterMeta(BaseModel):
     chapter_id: str
     title: str
+    description: str = ""
     module: int
     locked: bool = False
 

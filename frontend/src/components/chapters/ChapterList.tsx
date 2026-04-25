@@ -20,8 +20,6 @@ interface ChapterListProps {
   userTier: string;
 }
 
-const LOCKED_CHAPTERS = ["chapter-04", "chapter-05"];
-
 export function ChapterListSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -35,14 +33,15 @@ export function ChapterListSkeleton() {
 export function ChapterList({ chapters, userTier }: ChapterListProps) {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  const isLocked = (id: string) =>
-    LOCKED_CHAPTERS.includes(id) && userTier === "free";
+  // Use the locked flag from the backend (authoritative); fall back to tier check.
+  const isLocked = (chapter: ChapterMeta) =>
+    chapter.locked === true || (userTier === "free" && (chapter.order ?? 0) >= 4);
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {chapters.map((chapter, i) => {
-          const locked = isLocked(chapter.id);
+          const locked = isLocked(chapter);
           return (
             <motion.div
               key={chapter.id}

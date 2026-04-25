@@ -8,11 +8,36 @@ from app.schemas.chapter import ChapterContent, ChapterMeta, ChapterNav, Chapter
 
 # Static chapter metadata list — order defines navigation.
 CHAPTER_METADATA: list[ChapterMeta] = [
-    ChapterMeta(chapter_id="chapter-01", title="Introduction to AI Agents", module=1),
-    ChapterMeta(chapter_id="chapter-02", title="Claude Agent SDK", module=2),
-    ChapterMeta(chapter_id="chapter-03", title="Model Context Protocol (MCP)", module=3),
-    ChapterMeta(chapter_id="chapter-04", title="Agent Skills (SKILL.md)", module=4),
-    ChapterMeta(chapter_id="chapter-05", title="Multi-Agent Systems", module=5),
+    ChapterMeta(
+        chapter_id="chapter-01",
+        title="Introduction to AI Agents",
+        description="Core architectures, agent loops, tool use basics, and the fundamentals of autonomous AI systems.",
+        module=1,
+    ),
+    ChapterMeta(
+        chapter_id="chapter-02",
+        title="Claude Agent SDK",
+        description="SDK setup, agent types, memory patterns, and building your first Claude-powered agent.",
+        module=2,
+    ),
+    ChapterMeta(
+        chapter_id="chapter-03",
+        title="Model Context Protocol (MCP)",
+        description="MCP servers, resources & tools API, prompts API, and integrating external capabilities.",
+        module=3,
+    ),
+    ChapterMeta(
+        chapter_id="chapter-04",
+        title="Agent Skills (SKILL.md)",
+        description="Skill composition, error recovery, testing agents, and building reusable agent capabilities.",
+        module=4,
+    ),
+    ChapterMeta(
+        chapter_id="chapter-05",
+        title="Multi-Agent Systems",
+        description="Orchestration patterns, agent communication, parallel execution, and production deployment.",
+        module=5,
+    ),
 ]
 
 _CHAPTER_INDEX: dict[str, int] = {
