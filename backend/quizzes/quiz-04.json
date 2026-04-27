@@ -30,7 +30,7 @@
       "options": {
         "A": "They are uploaded to a vector database and retrieved by similarity",
         "B": "The content of each SKILL.md is substituted into the system prompt at placeholder positions",
-        "C": "They are passed as separate `tools` in the API call",
+        "C": "They are passed as separate tools in the API call",
         "D": "They are loaded as Python modules"
       },
       "correct_answer": "B"
@@ -39,7 +39,7 @@
       "id": "q4",
       "question": "What is a state trigger in the context of agent skills?",
       "options": {
-        "A": "A trigger based on the agent's memory of prior turns",
+        "A": "A trigger based on the agent's model weights",
         "B": "A trigger that activates based on conversation state, such as the user finishing a chapter",
         "C": "A trigger based on database state",
         "D": "A trigger that fires every time the agent is initialised"
@@ -48,7 +48,7 @@
     },
     {
       "id": "q5",
-      "question": "What is the main advantage of decomposing agent behaviour into skills rather than using a monolithic system prompt?",
+      "question": "What is the main advantage of decomposing agent behaviour into skills vs a monolithic system prompt?",
       "options": {
         "A": "Skills reduce the model's context window usage to zero",
         "B": "Skills eliminate the need for a system prompt entirely",
@@ -56,6 +56,116 @@
         "D": "Skills automatically handle retry logic"
       },
       "correct_answer": "C"
+    },
+    {
+      "id": "q6",
+      "question": "A 'keyword trigger' in a SKILL.md activates the skill when:",
+      "options": {
+        "A": "The conversation has lasted more than 10 turns",
+        "B": "The user message contains specific words or phrases like 'quiz me' or 'test me'",
+        "C": "The model confidence drops below a threshold",
+        "D": "The user's account tier is Pro"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q7",
+      "question": "In the Concept Explainer skill, how should the explanation depth be chosen?",
+      "options": {
+        "A": "Always use the most technical explanation possible",
+        "B": "Based on the user's vocabulary and prior messages to assess their level",
+        "C": "Always use an analogy first regardless of user level",
+        "D": "Choose randomly to provide variety"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q8",
+      "question": "Which of the following represents a multi-turn skill workflow?",
+      "options": {
+        "A": "A single response that answers a question",
+        "B": "A sequence of agent actions spanning multiple messages, like a 5-question quiz session",
+        "C": "A batch of API calls made in parallel",
+        "D": "A cron job that runs daily"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q9",
+      "question": "What constraint does the Concept Explainer skill impose on explanation scope?",
+      "options": {
+        "A": "Always explain at least 3 related concepts",
+        "B": "Do not explain more than one concept per response",
+        "C": "Always include code examples",
+        "D": "Limit explanations to 50 words"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q10",
+      "question": "In a skill composition system prompt, how are multiple skills combined?",
+      "options": {
+        "A": "Each skill gets its own separate API call",
+        "B": "Skills are listed in a config file and loaded at startup",
+        "C": "Skill content is substituted at placeholder positions in a master system prompt",
+        "D": "Skills are merged into a single tool definition"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q11",
+      "question": "What should the agent do when no skill matches the user's message?",
+      "options": {
+        "A": "Return an error message",
+        "B": "Respond helpfully and guide the user back to the course content",
+        "C": "Refuse to answer and ask the user to rephrase",
+        "D": "Escalate to a human operator"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q12",
+      "question": "The Quiz Master skill's workflow ends by:",
+      "options": {
+        "A": "Redirecting the user to a different website",
+        "B": "Giving a final score, highlighting weak areas, and suggesting re-reading if score < 60%",
+        "C": "Deleting the conversation history",
+        "D": "Sending a score report via email"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q13",
+      "question": "Which file structure is recommended for organising agent skills?",
+      "options": {
+        "A": "All skills in a single skills.py file",
+        "B": "Each skill in its own subdirectory under skills/ with a SKILL.md file",
+        "C": "Skills stored in a relational database",
+        "D": "Skills embedded directly in the agent's main script"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q14",
+      "question": "An 'intent trigger' differs from a 'keyword trigger' because it:",
+      "options": {
+        "A": "Only works with paid API tiers",
+        "B": "Requires the user to use exact trigger phrases",
+        "C": "Activates based on inferred user intent, even without specific trigger words",
+        "D": "Fires based on the time of day"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q15",
+      "question": "What is the key benefit of the Output Format section in a SKILL.md?",
+      "options": {
+        "A": "It sets the JSON schema for tool calls",
+        "B": "It ensures consistent, structured responses that meet user expectations",
+        "C": "It controls the model's sampling temperature",
+        "D": "It limits the number of tokens in each response"
+      },
+      "correct_answer": "B"
     }
   ]
 }

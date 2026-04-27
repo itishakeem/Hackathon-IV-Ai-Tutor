@@ -6,9 +6,10 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { authApi, getErrorStatus } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 import MeshBackground from "@/components/ui/MeshBackground";
 import GradientText from "@/components/ui/GradientText";
-import { BookOpen, Loader2, AlertCircle, ArrowRight, ArrowLeft, KeyRound, Mail } from "lucide-react";
+import { Loader2, AlertCircle, ArrowRight, ArrowLeft, KeyRound, Mail } from "lucide-react";
 import { useReducedMotion } from "@/lib/animations";
 
 const inputCls =
@@ -20,6 +21,7 @@ type Step = "email" | "code";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const clearAuth = useAuthStore((s) => s.clearAuth);
   const reducedMotion = useReducedMotion();
 
   const [step, setStep] = useState<Step>("email");
@@ -60,6 +62,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       await authApi.resetPassword(email, code, newPassword);
+      clearAuth();
       toast.success("Password reset! Please sign in.");
       router.push("/login");
     } catch (err: unknown) {

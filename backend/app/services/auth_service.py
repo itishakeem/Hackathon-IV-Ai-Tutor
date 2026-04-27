@@ -26,7 +26,7 @@ def _verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
-async def register_user(db: AsyncSession, email: str, password: str) -> str:
+async def register_user(db: AsyncSession, email: str, password: str, name: str = "") -> str:
     """Hash password, insert User row, return signed JWT.
 
     Raises HTTP 409 if email already registered.
@@ -41,13 +41,14 @@ async def register_user(db: AsyncSession, email: str, password: str) -> str:
     user = User(
         email=email,
         hashed_password=_hash_password(password),
+        name=name,
         tier="free",
     )
     db.add(user)
     await db.commit()
     await db.refresh(user)
 
-    return create_access_token(sub=str(user.id), tier=user.tier)
+    return create_access_token(sub=str(user.id), tier=user.tier, email=user.email, name=user.name or "")
 
 
 async def login_user(db: AsyncSession, email: str, password: str) -> str:
@@ -65,7 +66,7 @@ async def login_user(db: AsyncSession, email: str, password: str) -> str:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return create_access_token(sub=str(user.id), tier=user.tier)
+    return create_access_token(sub=str(user.id), tier=user.tier, email=user.email, name=user.name or "")
 
 
 async def request_password_reset(db: AsyncSession, email: str) -> None:

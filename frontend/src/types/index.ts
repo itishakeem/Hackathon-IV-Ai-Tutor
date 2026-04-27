@@ -14,15 +14,27 @@ export interface JwtPayload {
   sub: string; // user UUID string
   email: string;
   tier: "free" | "premium" | "pro" | "team";
+  name?: string;
   exp: number; // Unix timestamp
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  tier: string;
+  avatar: string | null;
 }
 
 export interface AuthState {
   token: string | null;
   user: JwtPayload | null;
+  profile: UserProfile | null; // fresh from /auth/me
   isAuthenticated: boolean;
   setAuth: (token: string, user: JwtPayload) => void;
   clearAuth: () => void;
+  setProfile: (profile: UserProfile) => void;
+  updateProfile: (updates: Partial<UserProfile>) => void;
 }
 
 // --- Chapters -----------------------------------------------------------------
@@ -102,6 +114,7 @@ export interface QuizAnswersResponse {
 export interface QuizScore {
   chapter_id: string;
   score: number;
+  total_questions?: number;
   attempted_at: string; // ISO datetime string
 }
 

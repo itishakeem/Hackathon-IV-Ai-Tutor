@@ -27,14 +27,13 @@ export function LoginForm() {
       const { access_token } = await authApi.login(email, password);
       const user = decodeJwt(access_token);
       setAuth(access_token, user);
-      toast.success("Welcome back!");
+      const displayName = user.name || user.email?.split("@")[0] || "there";
+      toast.success(`Welcome back, ${displayName}! 👋`);
       router.push("/dashboard");
     } catch (err: unknown) {
       const status = getErrorStatus(err);
-      if (status === 401) {
-        setFormState({ submitting: false, error: "Invalid email or password." });
-      } else if (status === 422) {
-        setFormState({ submitting: false, error: "Please enter a valid email and password." });
+      if (status === 401 || status === 422) {
+        setFormState({ submitting: false, error: "Incorrect email or password. Please try again." });
       } else {
         setFormState({ submitting: false, error: null });
         // 500/503/network errors are handled by the axios interceptor toast

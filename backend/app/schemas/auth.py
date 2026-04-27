@@ -4,6 +4,19 @@ from pydantic import BaseModel, EmailStr
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
+    name: str = ""
+
+
+class UserProfileResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    tier: str
+    avatar: str | None
+
+
+class UpdateProfileRequest(BaseModel):
+    name: str | None = None
 
 
 class LoginRequest(BaseModel):

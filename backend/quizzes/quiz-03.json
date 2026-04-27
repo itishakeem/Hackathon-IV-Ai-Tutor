@@ -52,10 +52,120 @@
       "options": {
         "A": "Accept any input without validation for maximum flexibility",
         "B": "Return an HTTP 500 status on tool errors",
-        "C": "Return isError: true with a descriptive message rather than crashing on errors",
+        "C": "Return isError: true with a descriptive message rather than crashing",
         "D": "Use a single tool that handles all operations"
       },
       "correct_answer": "C"
+    },
+    {
+      "id": "q6",
+      "question": "What problem does MCP primarily solve in the AI ecosystem?",
+      "options": {
+        "A": "Reducing the cost of API calls to Claude",
+        "B": "Standardising the interface between AI models and external tools so each tool works with any MCP-compatible client",
+        "C": "Enabling AI models to run without internet access",
+        "D": "Compressing large language models to run on mobile devices"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q7",
+      "question": "In an MCP server, what does the `@app.list_tools()` decorator define?",
+      "options": {
+        "A": "The handler that returns the list of tool definitions when the client sends tools/list",
+        "B": "The function that executes a tool when called by the client",
+        "C": "The server's startup routine",
+        "D": "The authentication handler"
+      },
+      "correct_answer": "A"
+    },
+    {
+      "id": "q8",
+      "question": "When an MCP tool call succeeds, what field in the response indicates no error occurred?",
+      "options": {
+        "A": "success: true",
+        "B": "status: 200",
+        "C": "isError: false",
+        "D": "error: null"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q9",
+      "question": "What is a 'Resource' in the MCP protocol?",
+      "options": {
+        "A": "CPU and memory allocated to the server",
+        "B": "A data source the client can read, such as files, database rows, or API responses",
+        "C": "An API key used for authentication",
+        "D": "A cached version of a previous tool call result"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q10",
+      "question": "In stdio transport mode, how does the MCP client communicate with the server?",
+      "options": {
+        "A": "Over HTTP on a configurable port",
+        "B": "Through a Unix domain socket",
+        "C": "By spawning the server as a subprocess and exchanging JSON over stdin/stdout",
+        "D": "Via a shared memory segment"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q11",
+      "question": "Which Python package provides the MCP server framework?",
+      "options": {
+        "A": "anthropic",
+        "B": "fastapi",
+        "C": "mcp",
+        "D": "openai-mcp"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q12",
+      "question": "What is the correct method name to call a tool via MCP's JSON-RPC interface?",
+      "options": {
+        "A": "tool/execute",
+        "B": "tools/call",
+        "C": "call_tool",
+        "D": "invoke/tool"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q13",
+      "question": "Why is the `description` field in an MCP tool definition critically important?",
+      "options": {
+        "A": "It sets the access permissions for the tool",
+        "B": "It is what the AI model reads to decide when and how to use the tool",
+        "C": "It defines the return type of the tool",
+        "D": "It sets the tool's execution timeout"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q14",
+      "question": "After the MCP handshake `initialize` exchange, what does the client send to complete the connection setup?",
+      "options": {
+        "A": "authenticate",
+        "B": "tools/list",
+        "C": "initialized",
+        "D": "ready"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q15",
+      "question": "Which security best practice should a file-reading MCP tool enforce?",
+      "options": {
+        "A": "Encrypt all file contents before returning them",
+        "B": "Only allow reading within an approved directory scope",
+        "C": "Require OAuth2 authentication for every file read",
+        "D": "Cache all results for 24 hours to reduce disk access"
+      },
+      "correct_answer": "B"
     }
   ]
 }

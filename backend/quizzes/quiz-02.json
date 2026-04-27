@@ -15,7 +15,7 @@
     },
     {
       "id": "q2",
-      "question": "After Claude returns a `tool_use` block, what message must you add to the conversation before calling `messages.create` again?",
+      "question": "After Claude returns a `tool_use` block, what message must you add before calling `messages.create` again?",
       "options": {
         "A": "A new `user` message with the tool's input",
         "B": "A `user` message containing a `tool_result` block with the tool's output",
@@ -56,6 +56,116 @@
         "D": "uv pip install anthropic"
       },
       "correct_answer": "C"
+    },
+    {
+      "id": "q6",
+      "question": "Where should the ANTHROPIC_API_KEY be stored according to security best practices?",
+      "options": {
+        "A": "Hardcoded in the Python source file",
+        "B": "As a comment in the README",
+        "C": "As an environment variable, not in source code",
+        "D": "In the system prompt sent to the model"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q7",
+      "question": "What is the minimum Python version required to use the Anthropic SDK?",
+      "options": {
+        "A": "Python 2.7",
+        "B": "Python 3.6",
+        "C": "Python 3.10",
+        "D": "Python 3.12"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q8",
+      "question": "Which field in the tool definition tells Claude what the tool does and when to use it?",
+      "options": {
+        "A": "name",
+        "B": "input_schema",
+        "C": "description",
+        "D": "parameters"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q9",
+      "question": "In a tool loop, after processing a tool_use block and getting the tool result, what is the correct next step?",
+      "options": {
+        "A": "Start a new conversation with a clean message history",
+        "B": "Append the tool result as a tool_result block and call messages.create again",
+        "C": "Return the tool result directly to the user without calling the model again",
+        "D": "Wait 1 second and then retry the same request"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q10",
+      "question": "Which principle means a tool should only perform one distinct operation rather than combining multiple actions?",
+      "options": {
+        "A": "Idempotent",
+        "B": "Safe",
+        "C": "Narrow",
+        "D": "Typed"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q11",
+      "question": "What does the `input_schema` field of a tool definition contain?",
+      "options": {
+        "A": "The Python function signature",
+        "B": "A JSON Schema object defining valid inputs with properties and required fields",
+        "C": "A list of example inputs",
+        "D": "The tool's return type"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q12",
+      "question": "Which tool design principle is violated by a tool that deletes files without any confirmation step?",
+      "options": {
+        "A": "Narrow",
+        "B": "Typed",
+        "C": "Safe — read before write; destructive actions require confirmation",
+        "D": "Idempotent"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q13",
+      "question": "How do you create the Anthropic client in Python?",
+      "options": {
+        "A": "client = anthropic.Client()",
+        "B": "client = anthropic.Anthropic()",
+        "C": "client = anthropic.create()",
+        "D": "client = Claude(api_key=...)"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q14",
+      "question": "The `tools` parameter in `client.messages.create()` expects:",
+      "options": {
+        "A": "A list of Python function objects",
+        "B": "A dict mapping tool names to functions",
+        "C": "A list of tool definition dicts, each with name, description, and input_schema",
+        "D": "A JSON string of tool definitions"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q15",
+      "question": "What is the recommended model ID to use with the Anthropic SDK for the most capable Claude model as of 2025?",
+      "options": {
+        "A": "claude-3-5-sonnet",
+        "B": "claude-opus-4-6",
+        "C": "claude-2-1",
+        "D": "claude-instant"
+      },
+      "correct_answer": "B"
     }
   ]
 }

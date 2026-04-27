@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Edit2, AlertTriangle, CheckCircle, Clock, Trophy } from "lucide-react";
+import { Lock, AlertTriangle, Clock, Camera, Check, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
 import { useChapters } from "@/hooks/useChapters";
+import { authApi, progressApi } from "@/lib/api";
 import PageTransition from "@/components/ui/PageTransition";
 import GradientText from "@/components/ui/GradientText";
 import GlassCard from "@/components/ui/GlassCard";
-import GradientButton from "@/components/ui/GradientButton";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -235,42 +236,108 @@ function AchievementCard({
 // Profile Page
 // ---------------------------------------------------------------------------
 export default function ProfilePage() {
-  const { user } = useAuth();
-  const { data: progress, loading } = useProgress();
+  const { user, profile, setProfile } = useAuth();
+  const { data: progress, loading, refetch: refetchProgress } = useProgress();
   const { data: chapters } = useChapters();
   const reducedMotion = useReducedMotion();
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [resetDone, setResetDone] = useState(false);
 
-  const name = user?.email?.split("@")[0] ?? "Developer";
-  const initials = name.slice(0, 2).toUpperCase();
-  const tier = user?.tier ?? "free";
+  // progress reset
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  // profile edit
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Resolved values: profile (DB) > JWT > email prefix
+  const displayName = profile?.name || user?.name || user?.email?.split("@")[0] || "Developer";
+  const displayAvatar = avatarPreview || profile?.avatar || null;
+  const initials = displayName.slice(0, 2).toUpperCase();
+  const tier = (profile?.tier ?? user?.tier ?? "free") as string;
   const tierBadge = TIER_BADGE[tier] ?? TIER_BADGE["free"]!;
 
   const completedCount = progress?.completed_chapters.length ?? 0;
   const streak = progress?.streak ?? 0;
-  const quizScores = (progress?.quiz_scores ?? []).map((s) => s.score);
+  const quizScores = (progress?.quiz_scores ?? []).map((s) => Math.min(s.score, 100));
   const avgScore =
     quizScores.length > 0
-      ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length)
+      ? Math.min(Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length), 100)
       : 0;
 
-  // Days active: unique dates from quiz attempts
   const uniqueDays = new Set(
-    (progress?.quiz_scores ?? []).map((s) =>
-      new Date(s.attempted_at).toDateString()
-    )
+    (progress?.quiz_scores ?? []).map((s) => new Date(s.attempted_at).toDateString())
   ).size;
 
   const memberSince = "April 2026";
-
-  // Achievement check args
   const achArgs = { completedCount, quizScores, streak };
 
-  function handleReset() {
+  function startEditing() {
+    setEditName(profile?.name || user?.name || "");
+    setAvatarPreview(null);
+    setAvatarFile(null);
+    setIsEditing(true);
+  }
+
+  function cancelEditing() {
+    setIsEditing(false);
+    setEditName("");
+    setAvatarPreview(null);
+    setAvatarFile(null);
+  }
+
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const updated = await authApi.updateMe(
+        editName.trim() || null,
+        avatarFile
+      );
+      setProfile(updated);
+      setIsEditing(false);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      toast.success("Profile updated!");
+    } catch {
+      toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleReset() {
+    if (!user) return;
     setConfirmOpen(false);
-    setResetDone(true);
-    setTimeout(() => setResetDone(false), 3000);
+    setResetting(true);
+    try {
+      await progressApi.reset(user.sub);
+      toast.success("Progress reset successfully");
+      refetchProgress();
+    } catch {
+      toast.error("Failed to reset progress");
+    } finally {
+      setResetting(false);
+    }
   }
 
   if (loading) {
@@ -299,44 +366,80 @@ export default function ProfilePage() {
           PROFILE HEADER
       ================================================================ */}
       <GlassCard className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-        {/* Avatar with gradient ring */}
-        <div className="p-[3px] bg-gradient-to-br from-indigo-500 to-violet-500 rounded-full shrink-0 shadow-[0_0_30px_rgba(99,102,241,0.4)]">
-          <div className="w-20 h-20 rounded-full bg-[#0D0D14] flex items-center justify-center">
-            <span className="text-2xl font-black bg-gradient-to-br from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-              {initials}
-            </span>
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 text-center sm:text-left space-y-2">
-          <div>
-            <h1 className="text-2xl font-bold text-white capitalize">{name}</h1>
-            <p className="text-white/40 text-sm">{user?.email}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
-            <span
-              className={cn(
-                "inline-block border px-3 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider",
-                tierBadge.className
+        {/* Avatar with gradient ring + camera overlay in edit mode */}
+        <div className="relative group shrink-0">
+          <div className="p-[3px] bg-gradient-to-br from-indigo-500 to-violet-500 rounded-full shadow-[0_0_30px_rgba(99,102,241,0.4)]">
+            <div className="w-20 h-20 rounded-full bg-[#0D0D14] overflow-hidden flex items-center justify-center">
+              {displayAvatar ? (
+                <img src={displayAvatar} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-black bg-gradient-to-br from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                  {initials}
+                </span>
               )}
-            >
-              {tierBadge.label}
-            </span>
-            <span className="text-white/30 text-xs">Member since {memberSince}</span>
+            </div>
           </div>
+          {isEditing && (
+            <label className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <Camera className="w-5 h-5 text-white" />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            </label>
+          )}
         </div>
 
-        {/* Edit button */}
-        <GradientButton
-          variant="secondary"
-          size="sm"
-          onClick={() => {}}
-          className="shrink-0"
-        >
-          <Edit2 className="w-3.5 h-3.5" />
-          Edit Profile
-        </GradientButton>
+        {/* Info / edit form */}
+        <div className="flex-1 text-center sm:text-left space-y-3 w-full">
+          {isEditing ? (
+            <>
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                maxLength={50}
+                placeholder="Your name"
+                className="w-full sm:max-w-xs rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-white text-lg font-bold focus:outline-none focus:border-indigo-500 focus:shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all"
+              />
+              <p className="text-white/30 text-xs">Click the avatar to change photo (max 2MB)</p>
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-semibold disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  {saving ? "Saving…" : "Save Changes"}
+                </button>
+                <button
+                  onClick={cancelEditing}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-sm transition-all"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Cancel
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <h1 className="text-2xl font-bold text-white">{displayName}</h1>
+                <p className="text-white/40 text-sm">{user?.email}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+                <span className={cn("inline-block border px-3 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider", tierBadge.className)}>
+                  {tierBadge.label}
+                </span>
+                <span className="text-white/30 text-xs">Member since {memberSince}</span>
+              </div>
+              <button
+                onClick={startEditing}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-sm transition-all"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                Edit Profile
+              </button>
+            </>
+          )}
+        </div>
       </GlassCard>
 
       {/* ================================================================
@@ -460,10 +563,10 @@ export default function ProfilePage() {
                         <span
                           className={cn(
                             "text-sm font-bold border px-2.5 py-0.5 rounded-full",
-                            getScoreColor(score.score)
+                            getScoreColor(Math.min(score.score, 100))
                           )}
                         >
-                          {score.score}%
+                          {Math.min(score.score, 100).toFixed(1)}%
                         </span>
                       </div>
                     </motion.div>
@@ -517,25 +620,12 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setConfirmOpen(true)}
-              className="px-5 py-2.5 rounded-xl border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium"
+              disabled={resetting}
+              className="px-5 py-2.5 rounded-xl border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Reset Progress
+              {resetting ? "Resetting…" : "Reset Progress"}
             </button>
           </div>
-
-          <AnimatePresence>
-            {resetDone && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2 text-sm text-emerald-400"
-              >
-                <CheckCircle className="w-4 h-4" />
-                Progress has been reset (demo only — no API call in this build).
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </ScrollReveal>
 

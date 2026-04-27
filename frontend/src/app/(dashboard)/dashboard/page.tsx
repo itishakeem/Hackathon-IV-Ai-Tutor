@@ -58,11 +58,16 @@ export default function DashboardPage() {
   const { data: chapters } = useChapters();
   const reducedMotion = useReducedMotion();
 
+  const { profile } = useAuth();
+
   const greeting = getGreeting();
   const dateString = getDateString();
-  const name = capitalize(user?.email?.split("@")[0] ?? "Developer");
+  // profile.name is the authoritative DB value; fall back to JWT name, then email prefix
+  const rawName = profile?.name || user?.name || user?.email?.split("@")[0] || "Developer";
+  const name = capitalize(rawName);
   const pct = progress?.completion_percentage ?? 0;
-  const subtitle = getProgressSubtitle(pct);
+  const isNewUser = !progress || progress.completed_chapters.length === 0;
+  const subtitle = isNewUser ? "Start your AI Agent journey today 🚀" : getProgressSubtitle(pct);
 
   const averageScore =
     progress && progress.quiz_scores.length > 0
@@ -171,7 +176,9 @@ export default function DashboardPage() {
           animate="visible"
         >
           <motion.h1 variants={staggerItem} className="text-3xl font-bold text-white">
-            {greeting}, <GradientText>{name}</GradientText> 👋
+            {isNewUser ? "Welcome" : "Welcome back"},{" "}
+            <GradientText>{name}</GradientText>
+            {isNewUser ? " 🎉" : " 👋"}
           </motion.h1>
           <motion.p variants={staggerItem} className="text-white/40 text-sm mt-1">
             {dateString}

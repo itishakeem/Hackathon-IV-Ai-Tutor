@@ -4,14 +4,24 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { authApi } from "@/lib/api";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, profile, setProfile } = useAuth();
   const router = useRouter();
+
+  // Fetch fresh profile from DB on first authenticated load.
+  // This ensures name/avatar are up-to-date even if the JWT was issued
+  // before the name column existed (all pre-migration accounts).
+  useEffect(() => {
+    if (isAuthenticated && !profile) {
+      authApi.getMe().then(setProfile).catch(() => {});
+    }
+  }, [isAuthenticated, profile, setProfile]);
 
   useEffect(() => {
     if (!isAuthenticated) {

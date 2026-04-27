@@ -51,7 +51,7 @@ async def get_progress(db: AsyncSession, user_id: uuid.UUID) -> ProgressResponse
     quiz_scores = [
         QuizScoreItem(
             chapter_id=a.chapter_id,
-            score=round((a.score / a.total_questions) * 100) if a.total_questions > 0 else 0,
+            score=min(round((a.score / a.total_questions) * 100), 100) if a.total_questions > 0 else 0,
             attempted_at=a.attempted_at,
         )
         for a in attempts
@@ -59,7 +59,7 @@ async def get_progress(db: AsyncSession, user_id: uuid.UUID) -> ProgressResponse
 
     avg_quiz_score: float | None = None
     if quiz_scores:
-        avg_quiz_score = round(sum(s.score for s in quiz_scores) / len(quiz_scores), 1)
+        avg_quiz_score = min(round(sum(s.score for s in quiz_scores) / len(quiz_scores), 1), 100.0)
 
     return ProgressResponse(
         user_id=str(user_id),

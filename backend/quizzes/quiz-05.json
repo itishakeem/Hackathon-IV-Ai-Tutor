@@ -4,7 +4,7 @@
   "questions": [
     {
       "id": "q1",
-      "question": "Which of the following is NOT listed as a limit that multi-agent systems overcome?",
+      "question": "Which of the following is NOT a limit that multi-agent systems overcome?",
       "options": {
         "A": "Context window constraints",
         "B": "Lack of specialisation",
@@ -50,12 +50,122 @@
       "id": "q5",
       "question": "When should you use the debate pattern in a multi-agent system?",
       "options": {
-        "A": "When speed is the top priority and you want the fastest possible answer",
-        "B": "When tasks are strictly sequential and have no parallelism",
-        "C": "When high accuracy matters more than speed and you want multiple independent solutions evaluated by a judge",
+        "A": "When speed is the top priority",
+        "B": "When tasks are strictly sequential",
+        "C": "When high accuracy matters more than speed and multiple independent solutions are evaluated by a judge",
         "D": "When agents need to share a single database connection"
       },
       "correct_answer": "C"
+    },
+    {
+      "id": "q6",
+      "question": "In hierarchical orchestration, what is the orchestrator's primary role?",
+      "options": {
+        "A": "Execute all tasks directly without delegation",
+        "B": "Break the goal into tasks, delegate to specialists, aggregate results, and handle failures",
+        "C": "Maintain the shared database for all agents",
+        "D": "Monitor costs and shut down agents that exceed budget"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q7",
+      "question": "What is the purpose of a Trace ID in a multi-agent observability system?",
+      "options": {
+        "A": "To authenticate agents to each other",
+        "B": "To uniquely identify and follow a request as it passes through multiple agents",
+        "C": "To track the cost of each LLM call",
+        "D": "To assign tasks to specific agents based on specialisation"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q8",
+      "question": "In the pipeline orchestration pattern, how do agents relate to each other?",
+      "options": {
+        "A": "All agents process the same input independently",
+        "B": "Agents form a linear chain where each agent's output is the next agent's input",
+        "C": "One orchestrator manages all agents simultaneously",
+        "D": "Agents vote on the best answer"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q9",
+      "question": "What does the `delegate_with_retry` pattern using exponential backoff do on a timeout?",
+      "options": {
+        "A": "Immediately fails and returns an error",
+        "B": "Waits 2^attempt seconds before retrying, up to max_retries",
+        "C": "Delegates the task to a different agent",
+        "D": "Increases the task's priority in the queue"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q10",
+      "question": "In the A2A synchronous call pattern, the orchestrator:",
+      "options": {
+        "A": "Continues other work while the subagent processes",
+        "B": "Waits for the subagent to return a result before proceeding",
+        "C": "Sends the task to all available agents simultaneously",
+        "D": "Stores the task in a queue for later processing"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q11",
+      "question": "Which Dockerfile instruction is used to set the working directory for subsequent commands?",
+      "options": {
+        "A": "DIR /app",
+        "B": "SET /app",
+        "C": "WORKDIR /app",
+        "D": "CD /app"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q12",
+      "question": "Why should agents be stateless by default in a multi-agent production system?",
+      "options": {
+        "A": "Stateless agents run faster because they skip memory allocation",
+        "B": "All shared state in external storage enables scaling, restarts, and replacements without data loss",
+        "C": "Stateless agents cost less to run on cloud infrastructure",
+        "D": "Regulations require agents to not store any data"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q13",
+      "question": "What structured log fields should every agent emit for distributed tracing?",
+      "options": {
+        "A": "ip_address, user_agent, referer, method",
+        "B": "trace_id, agent_id, task_id, duration_ms, status",
+        "C": "model_name, token_count, prompt_hash, response_hash",
+        "D": "cpu_usage, memory_mb, disk_read, disk_write"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q14",
+      "question": "Which orchestration pattern is best for an ETL-style workflow where data must be extracted, transformed, then validated in strict order?",
+      "options": {
+        "A": "Debate pattern",
+        "B": "Fan-out/fan-in pattern",
+        "C": "Pipeline pattern",
+        "D": "Broadcast pattern"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q15",
+      "question": "What are the three mandatory policies every agent in a retry-capable system must define?",
+      "options": {
+        "A": "Authentication, authorisation, and auditing",
+        "B": "Timeout, retry policy, and fallback behaviour",
+        "C": "Logging, metrics, and alerting",
+        "D": "Input schema, output schema, and error schema"
+      },
+      "correct_answer": "B"
     }
   ]
 }

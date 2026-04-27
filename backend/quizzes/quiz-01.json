@@ -37,7 +37,7 @@
     },
     {
       "id": "q4",
-      "question": "Which agent type is most appropriate for a research task that requires outlining a plan, searching multiple sources, and then writing a report?",
+      "question": "Which agent type is most appropriate for a research task that requires outlining a plan, searching multiple sources, and writing a report?",
       "options": {
         "A": "Reactive agent",
         "B": "Stateless agent",
@@ -54,6 +54,116 @@
         "B": "Pure deliberative",
         "C": "Hybrid",
         "D": "Stateless"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q6",
+      "question": "Which of the following is NOT a key property of an AI agent?",
+      "options": {
+        "A": "Goal-directed behaviour",
+        "B": "Tool-using capability",
+        "C": "Single-turn interaction only",
+        "D": "Context-awareness within a session"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q7",
+      "question": "In the perceive-reason-act-observe loop, what happens during the 'Act' phase?",
+      "options": {
+        "A": "The agent receives input from its environment",
+        "B": "The agent updates its internal world model",
+        "C": "The agent calls a tool, writes a response, or requests more information",
+        "D": "The agent decides what to do based on its goals"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q8",
+      "question": "Which scenario is best suited for an AI agent rather than a chatbot?",
+      "options": {
+        "A": "Answering 'What is the capital of France?'",
+        "B": "Booking a flight, checking a calendar, and emailing an itinerary",
+        "C": "Providing a static FAQ response",
+        "D": "Generating a single creative writing piece"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q9",
+      "question": "What is the primary advantage of a hybrid agent over a purely reactive agent?",
+      "options": {
+        "A": "Hybrid agents are always faster",
+        "B": "Hybrid agents never make mistakes",
+        "C": "Hybrid agents combine fast reactions for simple tasks with deliberative planning for complex ones",
+        "D": "Hybrid agents require no system prompt"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q10",
+      "question": "Agent autonomy refers to the agent's ability to:",
+      "options": {
+        "A": "Access the internet without restrictions",
+        "B": "Make multi-step decisions without per-step human direction",
+        "C": "Run on any hardware platform",
+        "D": "Generate images and audio"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q11",
+      "question": "Which of the following best describes agent memory in the context of the perceive-reason-act-observe loop?",
+      "options": {
+        "A": "Permanent storage of all past conversations across all users",
+        "B": "The agent's ability to maintain context of prior steps within the current session",
+        "C": "A database that the agent queries for factual information",
+        "D": "The model weights stored on disk"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q12",
+      "question": "A deliberative agent builds and updates an internal world model primarily to:",
+      "options": {
+        "A": "Reduce latency on simple queries",
+        "B": "Avoid using external tools",
+        "C": "Plan sequences of actions and reason about future states before executing",
+        "D": "Comply with data privacy regulations"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q13",
+      "question": "Which statement about agent tool use is most accurate?",
+      "options": {
+        "A": "Only agents with internet access can use tools",
+        "B": "Tool use is what allows agents to modify external state beyond generating text",
+        "C": "Tools are optional and agents perform better without them",
+        "D": "Tools are limited to database queries"
+      },
+      "correct_answer": "B"
+    },
+    {
+      "id": "q14",
+      "question": "An agent that labels each customer support message as positive or negative independently, without remembering previous messages, is an example of:",
+      "options": {
+        "A": "A deliberative agent",
+        "B": "A hybrid agent",
+        "C": "A reactive agent",
+        "D": "An orchestrator agent"
+      },
+      "correct_answer": "C"
+    },
+    {
+      "id": "q15",
+      "question": "Which of the following is the most accurate description of how the perceive-reason-act-observe loop terminates?",
+      "options": {
+        "A": "It always runs exactly once",
+        "B": "It runs forever until the server is shut down",
+        "C": "It runs until the agent determines the task is complete or a stopping condition is met",
+        "D": "It terminates after exactly 10 iterations"
       },
       "correct_answer": "C"
     }

@@ -14,14 +14,16 @@ from app.core.database import get_db
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-def create_access_token(sub: str, tier: str) -> str:
-    """Create a signed HS256 JWT with sub (user UUID) and tier embedded."""
+def create_access_token(sub: str, tier: str, email: str = "", name: str = "") -> str:
+    """Create a signed HS256 JWT with sub, tier, email, and name embedded."""
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
     payload = {
         "sub": sub,
         "tier": tier,
+        "email": email,
+        "name": name,
         "exp": expire,
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
@@ -34,8 +36,8 @@ def verify_token(token: str) -> dict:
             token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
         )
         sub: str = payload.get("sub")
-        tier: str = payload.get("tier")
-        if sub is None or tier is None:
+        tier: str = payload.get("tier", "free")
+        if sub is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token payload",

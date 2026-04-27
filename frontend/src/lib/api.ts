@@ -6,6 +6,7 @@ import type {
   ChapterContent,
   ChapterNav,
   AccessCheck,
+  QuizQuestion,
   QuizQuestionsResponse,
   QuizSubmit,
   QuizResult,
@@ -18,6 +19,7 @@ import type {
   SynthesisRequest,
   SynthesisResponse,
   UsageResponse,
+  UserProfile,
 } from "@/types";
 import { useAuthStore } from "@/store/authStore";
 
@@ -51,9 +53,13 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
 
     if (status === 401 && typeof window !== "undefined") {
-      useAuthStore.getState().clearAuth();
-      window.location.href = "/login";
-      return Promise.reject(error);
+      const url = error.config?.url ?? "";
+      // Don't redirect on the login/register requests themselves — let the form handle it
+      if (!url.includes("/auth/login") && !url.includes("/auth/register")) {
+        useAuthStore.getState().clearAuth();
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
     }
 
     if (status === 500 || status === 503) {
@@ -85,17 +91,14 @@ export { getErrorStatus };
 // ---------------------------------------------------------------------------
 
 export const authApi = {
-  register: (email: string, password: string) =>
+  register: (email: string, password: string, name: string = "") =>
     apiClient
-      .post<AuthToken>("/auth/register", { email, password })
+      .post<AuthToken>("/auth/register", { email, password, name })
       .then((r) => r.data),
 
   login: (email: string, password: string) =>
     apiClient
-      .post<AuthToken>("/auth/login", {
-        username: email,
-        password,
-      })
+      .post<AuthToken>("/auth/login", { email, password })
       .then((r) => r.data),
 
   forgotPassword: (email: string) =>
@@ -107,6 +110,22 @@ export const authApi = {
     apiClient
       .post<{ message: string }>("/auth/reset-password", { email, code, new_password })
       .then((r) => r.data),
+
+  getMe: () =>
+    apiClient
+      .get<UserProfile>("/auth/me")
+      .then((r) => r.data),
+
+  updateMe: (name: string | null, avatarFile: File | null) => {
+    const formData = new FormData();
+    if (name !== null) formData.append("name", name);
+    if (avatarFile) formData.append("avatar", avatarFile);
+    return apiClient
+      .patch<UserProfile>("/auth/me", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data);
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -195,21 +214,79 @@ export const accessApi = {
 // Quizzes API
 // ---------------------------------------------------------------------------
 
+// Backend sends options as a dict; frontend expects an array of {key, text}.
+type BackendQuizQuestion = {
+  id: string;
+  question: string;
+  options: Record<string, string>;
+};
+type BackendQuizQuestionsResponse = {
+  chapter_id: string;
+  questions: BackendQuizQuestion[];
+};
+// Backend result: score = correct count, total = total questions, results per id only.
+type BackendQuizResultItem = { id: string; correct: boolean };
+type BackendQuizResult = {
+  score: number;
+  total: number;
+  percentage: number;
+  results: BackendQuizResultItem[];
+};
+// Backend answers: array of {id, question, correct_answer}.
+type BackendQuizAnswerItem = { id: string; question: string; correct_answer: string };
+type BackendQuizAnswersResponse = { chapter_id: string; answers: BackendQuizAnswerItem[] };
+
+function normalizeQuizQuestion(b: BackendQuizQuestion): QuizQuestion {
+  const options = (["A", "B", "C", "D"] as const)
+    .filter((k) => k in b.options)
+    .map((k) => ({ key: k, text: b.options[k]! }));
+  return { id: b.id, question: b.question, options };
+}
+
 export const quizzesApi = {
   getQuestions: (chapterId: string) =>
     apiClient
-      .get<QuizQuestionsResponse>(`/quizzes/${chapterId}`)
-      .then((r) => r.data),
+      .get<BackendQuizQuestionsResponse>(`/quizzes/${chapterId}`)
+      .then((r): QuizQuestionsResponse => ({
+        chapter_id: r.data.chapter_id,
+        questions: r.data.questions.map(normalizeQuizQuestion),
+      })),
 
-  submit: (chapterId: string, body: QuizSubmit) =>
+  // `questions` is the previously fetched list — used to enrich per-result rows.
+  submit: (chapterId: string, body: QuizSubmit, questions: QuizQuestion[]) =>
     apiClient
-      .post<QuizResult>(`/quizzes/${chapterId}/submit`, body)
-      .then((r) => r.data),
+      .post<BackendQuizResult>(`/quizzes/${chapterId}/submit`, body)
+      .then((r): QuizResult => {
+        const { score, total, percentage, results } = r.data;
+        const qMap = new Map(questions.map((q) => [q.id, q]));
+        return {
+          chapter_id: chapterId,
+          score: Math.round(percentage),
+          correct_count: score,
+          total_questions: total,
+          results: results.map((item) => {
+            const q = qMap.get(item.id);
+            return {
+              question_id: item.id,
+              question: q?.question ?? item.id,
+              selected: (body.answers[item.id] ?? "A") as "A" | "B" | "C" | "D",
+              correct: "A" as "A" | "B" | "C" | "D", // not returned by backend on submit
+              is_correct: item.correct,
+            };
+          }),
+        };
+      }),
 
   getAnswers: (chapterId: string) =>
     apiClient
-      .get<QuizAnswersResponse>(`/quizzes/${chapterId}/answers`)
-      .then((r) => r.data),
+      .get<BackendQuizAnswersResponse>(`/quizzes/${chapterId}/answers`)
+      .then((r): QuizAnswersResponse => {
+        const answers: Record<string, "A" | "B" | "C" | "D"> = {};
+        for (const item of r.data.answers) {
+          answers[item.id] = item.correct_answer as "A" | "B" | "C" | "D";
+        }
+        return { chapter_id: r.data.chapter_id, answers };
+      }),
 };
 
 // ---------------------------------------------------------------------------
@@ -232,6 +309,11 @@ export const progressApi = {
   recordQuizScore: (userId: string, chapterId: string, score: number, totalQuestions: number) =>
     apiClient
       .put(`/progress/${userId}/quiz`, { chapter_id: chapterId, score, total_questions: totalQuestions })
+      .then((r) => r.data),
+
+  reset: (userId: string) =>
+    apiClient
+      .delete(`/progress/${userId}/reset`)
       .then((r) => r.data),
 };
 

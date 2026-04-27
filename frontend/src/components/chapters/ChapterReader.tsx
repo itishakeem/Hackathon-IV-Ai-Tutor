@@ -67,8 +67,28 @@ export function ChapterReader({ chapter, userId, onComplete }: ChapterReaderProp
 
       {/* Markdown content */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-3xl font-bold mb-6">{chapter.title}</h1>
-        <article className="prose prose-neutral dark:prose-invert max-w-none">
+        <article className={[
+          "prose prose-invert max-w-none",
+          "prose-headings:text-white prose-headings:font-bold",
+          "prose-h1:text-3xl prose-h1:mb-6",
+          "prose-h1:bg-gradient-to-r prose-h1:from-indigo-400 prose-h1:to-violet-400",
+          "prose-h1:bg-clip-text prose-h1:text-transparent",
+          "prose-h2:text-2xl prose-h2:text-indigo-300 prose-h2:mt-8 prose-h2:mb-4",
+          "prose-h2:border-b prose-h2:border-white/10 prose-h2:pb-2",
+          "prose-h3:text-xl prose-h3:text-violet-300",
+          "prose-p:text-slate-300 prose-p:leading-relaxed",
+          "prose-strong:text-white prose-strong:font-semibold",
+          "prose-code:text-cyan-300 prose-code:bg-white/10",
+          "prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm",
+          "prose-pre:bg-[#111118] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl",
+          "prose-blockquote:border-l-indigo-500 prose-blockquote:bg-indigo-500/10",
+          "prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:text-indigo-200",
+          "prose-table:border-collapse",
+          "prose-th:bg-white/10 prose-th:text-white prose-th:px-4 prose-th:py-2",
+          "prose-td:border prose-td:border-white/10 prose-td:px-4 prose-td:py-2 prose-td:text-slate-300",
+          "prose-li:text-slate-300",
+          "prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:text-indigo-300",
+        ].join(" ")}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeSlug]}
@@ -78,10 +98,13 @@ export function ChapterReader({ chapter, userId, onComplete }: ChapterReaderProp
         </article>
 
         {/* Complete button */}
-        <div className="mt-10 pt-6 border-t">
-          <Button onClick={handleMarkComplete}>
+        <div className="mt-10 pt-6 border-t border-white/10">
+          <button
+            onClick={handleMarkComplete}
+            className="px-6 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+          >
             Mark as Complete
-          </Button>
+          </button>
         </div>
       </div>
     </div>

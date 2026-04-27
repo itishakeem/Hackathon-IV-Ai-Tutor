@@ -27,15 +27,13 @@ export function ProgressChart({ scores }: ProgressChartProps) {
     );
   }
 
-  const chartData = scores.map((s) => ({
+  const chartData = scores.slice(-10).map((s) => ({
     date: new Date(s.attempted_at).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     }),
-    score: s.score,
-    chapter: s.chapter_id
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase()),
+    score: Math.min(s.score, 100),
+    chapter: s.chapter_id.replace("chapter-0", "Ch ").replace("chapter-", "Ch "),
   }));
 
   return (
@@ -77,8 +75,11 @@ export function ProgressChart({ scores }: ProgressChartProps) {
               fontSize: 12,
               color: "#F8FAFC",
             }}
-            formatter={(value) => [`${value}%`, "Score"]}
-            labelFormatter={(label) => `${label}`}
+            formatter={(value, _name, props) => [
+              `${value}%`,
+              props.payload?.chapter ?? "Score",
+            ]}
+            labelFormatter={(label) => label}
           />
           <Area
             type="monotone"

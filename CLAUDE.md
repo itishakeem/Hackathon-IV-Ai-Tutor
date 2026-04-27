@@ -206,5 +206,19 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 - `history/adr/` — Architecture Decision Records
 - `.specify/` — SpecKit Plus templates and scripts
 
+## Agent Skills
+
+All runtime skills are in `.claude/skills/`. Read the relevant `SKILL.md` before implementing any feature related to that skill domain.
+
+| Skill | Location | Use When |
+|-------|----------|----------|
+| luxury-ui | `.claude/skills/luxury-ui/SKILL.md` | Any UI component or page |
+| concept-explainer | `.claude/skills/concept-explainer/SKILL.md` | Explaining course features |
+| quiz-master | `.claude/skills/quiz-master/SKILL.md` | Quiz features |
+| socratic-tutor | `.claude/skills/socratic-tutor/SKILL.md` | Learning guidance features |
+| progress-motivator | `.claude/skills/progress-motivator/SKILL.md` | Progress tracking features |
+
+> The `backend/skills/` copies are used by the ChatGPT App system prompt at runtime and must be kept in sync with `.claude/skills/`.
+
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.

@@ -68,13 +68,13 @@ export default function QuizPage() {
       setSelected(null);
     } else {
       try {
-        const quizResult = await quizzesApi.submit(chapterId, { answers: newAnswers });
+        const quizResult = await quizzesApi.submit(chapterId, { answers: newAnswers }, questions);
         setResult(quizResult);
         setPhase("submitted");
         toast.success("Quiz submitted!");
 
         if (user) {
-          await progressApi.recordQuizScore(user.sub, chapterId, quizResult.score, quizResult.total_questions).catch(() => {});
+          await progressApi.recordQuizScore(user.sub, chapterId, quizResult.correct_count, quizResult.total_questions).catch(() => {});
         }
       } catch {
         toast.error("Failed to submit quiz.");

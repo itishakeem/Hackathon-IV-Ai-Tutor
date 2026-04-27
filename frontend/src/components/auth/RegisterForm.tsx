@@ -13,6 +13,7 @@ import type { FormState } from "@/types";
 const inputCls = "w-full rounded-xl border border-white/10 bg-[#0D0D14] px-4 py-3 text-sm text-[#F8FAFC] placeholder:text-white/30 focus:outline-none focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all duration-300";
 
 export function RegisterForm() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -28,26 +29,42 @@ export function RegisterForm() {
     }
     setFormState({ submitting: true, error: null });
     try {
-      const { access_token } = await authApi.register(email, password);
+      const { access_token } = await authApi.register(email, password, name.trim());
       const user = decodeJwt(access_token);
       setAuth(access_token, user);
-      toast.success("Account created!");
+      const displayName = user.name || name.trim() || email.split("@")[0];
+      toast.success(`Welcome, ${displayName}! 🎉`);
       router.push("/dashboard");
     } catch (err: unknown) {
       const status = getErrorStatus(err);
       if (status === 409) {
         setFormState({ submitting: false, error: "Email already in use." });
       } else if (status === 422) {
-        setFormState({ submitting: false, error: "Please enter a valid email and password." });
+        setFormState({ submitting: false, error: "Please fill in all fields correctly." });
       } else {
         setFormState({ submitting: false, error: null });
-        // 500/503/network errors handled by axios interceptor toast
       }
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-1.5">
+        <label htmlFor="reg-name" className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">
+          Your Name
+        </label>
+        <input
+          id="reg-name"
+          type="text"
+          autoComplete="name"
+          required
+          minLength={2}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ahmed Khan"
+          className={inputCls}
+        />
+      </div>
       <div className="space-y-1.5">
         <label htmlFor="reg-email" className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">
           Email
